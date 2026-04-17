@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NBA Playoff Challenge · 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-2: #141414;
+    --bg-3: #1c1c1c;
+    --bg-card: #1a1a1a;
+    --bg-card-hover: #232323;
+    --ink: #f5f1e8;
+    --ink-2: #c5c1b8;
+    --ink-dim: #8a8378;
+    --ink-soft: #3a3a3a;
+    --accent: #C4B298;
+    --accent-bright: #D4C5A0;
+    --accent-glow: rgba(196, 178, 152, 0.35);
+    --east: #4a7fc1;
+    --west: #e15555;
+    --line: #2a2a2a;
+    --line-soft: #1f1f1f;
+    --ok: #22c55e;
+    --gold: #d4a94a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.4;
+    background-image:
+      radial-gradient(circle at 15% 5%, rgba(196, 178, 152, 0.10), transparent 45%),
+      radial-gradient(circle at 85% 95%, rgba(212, 169, 74, 0.04), transparent 50%);
+  }
+
+  /* TOP NAV */
+  .topnav {
+    background: #000;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid var(--line);
+  }
+  .back-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    visibility: hidden;
+  }
+  .topnav-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    flex: 1;
+    text-align: center;
+    margin-right: 40px;
+  }
+  .topnav-title .dot { color: var(--accent); margin: 0 4px; }
+
+  /* TAB NAV */
+  .tab-nav {
+    display: flex;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 57px;
+    z-index: 40;
+  }
+  .tab-nav-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--ink-dim);
+    padding: 16px 8px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab-nav-btn:hover { color: var(--ink-2); }
+  .tab-nav-btn.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+
+  /* HERO SECTION */
+  .hero {
+    padding: 44px 20px 32px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40%; right: -10%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(196, 178, 152, 0.14), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 1200px; margin: 0 auto; position: relative; }
+  .hero-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-kicker::before {
+    content: '';
+    width: 28px; height: 1px;
+    background: var(--accent);
+  }
+  h1.hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(44px, 8vw, 92px);
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+    font-weight: 400;
+  }
+  h1.hero-title .highlight {
+    color: var(--accent);
+    font-style: italic;
+  }
+  .hero-sub {
+    font-size: 15px;
+    color: var(--ink-dim);
+    max-width: 620px;
+    line-height: 1.55;
+  }
+
+  /* CONTAINER */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  /* NEW HERO CARD LAYOUT */
+  .hero-card {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    padding: 2rem;
+    margin-bottom: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  @media (max-width: 768px) {
+    .hero-card { grid-template-columns: 1fr; }
+  }
+
+  .left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* My Bracket section */
+  .my-bracket {
+    background: var(--bg-3);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .my-bracket-header {
+    font-size: 13px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .my-bracket-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .bracket-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .bracket-info {
+    flex: 1;
+  }
+  .bracket-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .bracket-status {
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 1.5rem 1rem;
+  }
+  .empty-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .empty-sub {
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  /* Mini Leaderboard */
+  .mini-leaderboard {
+    background: var(--bg-3);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .lb-header {
+    font-size: 13px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .lb-count {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+  .lb-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .lb-row:last-child {
+    border-bottom: none;
+  }
+  .lb-rank {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink-dim);
+    min-width: 20px;
+  }
+  .lb-rank.top {
+    color: var(--gold);
+  }
+  .lb-name {
+    flex: 1;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .lb-pts {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* Right CTA section */
+  .cta-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+  }
+  .cta-kicker {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cta-kicker::before {
+    content: '●';
+    font-size: 9px;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+  .cta-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 16px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+  .countdown {
+    font-size: 64px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    line-height: 1;
+  }
+  .countdown .sep {
+    color: var(--ink-soft);
+    margin: 0 4px;
+  }
+  .countdown-label {
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .cta-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 18px 40px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .cta-btn:hover {
+    background: var(--accent-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--accent-glow);
+  }
+  .cta-sub {
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 12px;
+  }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title-icon {
+    font-size: 18px;
+  }
+  .section-title-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .section-sub {
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .section-action {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .section-action:hover { color: var(--accent-bright); }
+
+  /* UPCOMING GAMES */
+  .games-section { margin-bottom: 32px; }
+  .games-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .game-card {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    transition: border-color 0.15s;
+  }
+  .game-card:hover { border-color: var(--ink-soft); }
+  .game-date {
+    text-align: center;
+    padding-right: 12px;
+    border-right: 1px solid var(--line);
+  }
+  .game-date-month {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .game-date-day {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    line-height: 1;
+    margin: 2px 0;
+  }
+  .game-date-dow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .game-matchup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .game-teams {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .game-teams .vs { color: var(--ink-dim); font-weight: 500; margin: 0 4px; }
+  .game-meta {
+    font-size: 11px;
+    color: var(--ink-dim);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .game-tag {
+    background: var(--bg-3);
+    padding: 2px 6px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .game-tag.east { background: rgba(74, 127, 193, 0.2); color: var(--east); }
+  .game-tag.west { background: rgba(225, 85, 85, 0.2); color: var(--west); }
+  .game-time {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    text-align: right;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .game-time-pm {
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  @media (max-width: 500px) {
+    .game-card { grid-template-columns: 56px 1fr auto; padding: 12px 14px; gap: 10px; }
+    .game-teams { font-size: 13px; }
+  }
+
+  .config-warning {
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 10px 16px;
+    margin: 0;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .admin-link {
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    font-size: 10px;
+    color: var(--ink-dim);
+    text-decoration: none;
+    opacity: 0.3;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .admin-link:hover { opacity: 1; color: var(--accent); }
+
+  .tab-view { display: none; }
+  .tab-view.active { display: block; }
+
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .leaderboard-table th {
+    text-align: left;
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .leaderboard-table th.right { text-align: right; }
+  .leaderboard-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 13px;
+  }
+  .leaderboard-table tbody tr:hover { background: var(--bg-3); cursor: pointer; }
+  .lb-rank-cell {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--accent);
+    width: 40px;
+  }
+  .lb-rank-cell.top-1 { color: var(--gold); }
+  .lb-rank-cell.top-2 { color: #c0c0c0; }
+  .lb-rank-cell.top-3 { color: #cd7f32; }
+  .lb-name-cell { font-weight: 700; color: var(--ink); }
+  .lb-pts-cell {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--ink);
+    text-align: right;
+  }
+  .lb-pct-cell { 
+    color: var(--ink-dim); 
+    font-size: 13px;
+    text-align: right;
+  }
+  .lb-round-cell {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .lb-round-num {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .lb-round-total {
+    color: var(--ink-dim);
+    font-size: 11px;
+  }
+  
+  @media (max-width: 900px) {
+    .leaderboard-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+  .empty-leaderboard {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--ink-dim);
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+  }
+  .empty-state-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .tab-view.active.fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <button class="back-btn">←</button>
+  <div class="topnav-title">NBA PLAYOFF CHALLENGE</div>
+</div>
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-nav-btn active" data-tab="home">Home</button>
+  <button class="tab-nav-btn" data-tab="my">My Bracket</button>
+  <button class="tab-nav-btn" data-tab="leaderboard">Leaderboard</button>
+  <button class="tab-nav-btn" data-tab="rules">Rules</button>
+</div>
+
+<div id="configWarning" class="config-warning" style="display:none;">
+  ⚠ Supabase not configured — running in demo mode
+</div>
+
+<!-- HOME TAB -->
+<div class="tab-view active fade-in" id="tab-home">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-kicker">Playoff Challenge · 2026</div>
+      <h1 class="hero-title">The Road to the <span class="highlight">Larry O'Brien.</span></h1>
+      <p class="hero-sub">16 teams. 1 champion. Fill out your bracket and lock in your picks!</p>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- NEW HERO CARD -->
+    <div class="hero-card">
+      <!-- Left Column - CTA -->
+      <div class="cta-section">
+        <div class="cta-kicker" id="countdownKicker">Locks In</div>
+        <div class="countdown" id="countdown">
+          02<span class="sep">:</span>14<span class="sep">:</span>37<span class="sep">:</span>22
+        </div>
+        <div class="countdown-label">Days : Hours : Min : Sec</div>
+        <div class="cta-title">Create Your<br>Bracket</div>
+        <a href="bracket.html" class="cta-btn" id="ctaBtn">Get Started →</a>
+        <div class="cta-sub">Free to play · No sign-up required</div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="left-col">
+        <!-- My Bracket -->
+        <div class="my-bracket">
+          <div class="my-bracket-header">My Bracket</div>
+          <div id="myBracketContent">
+            <!-- Filled by JS -->
+            <div class="empty-state">
+              <div class="empty-title">No bracket yet</div>
+              <div class="empty-sub">Create yours before tipoff</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini Leaderboard -->
+        <div class="mini-leaderboard">
+          <div class="lb-header">
+            <span>Leaderboard</span>
+            <span class="lb-count" id="miniLbCount">Loading...</span>
+          </div>
+          <div id="miniLeaderboardContent">
+            <!-- Filled by JS -->
+            <div style="text-align: center; padding: 20px 0; color: var(--ink-dim); font-size: 13px;">
+              No submissions yet
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPCOMING GAMES -->
+    <div class="games-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-title-icon">🏀</span>
+          <div>
+            <div class="section-title-text">Upcoming Games</div>
+            <div class="section-sub">First round begins April 18</div>
+          </div>
+        </div>
+      </div>
+      <div class="games-list" id="gamesList">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MY BRACKET TAB -->
+<div class="tab-view" id="tab-my">
+  <div class="container">
+    <div class="empty-leaderboard">
+      <div class="empty-state-title">Your Bracket</div>
+      <p style="margin-bottom: 20px; font-size: 14px;">Opening the bracket builder...</p>
+      <a href="bracket.html" class="cta-btn" style="max-width: 300px;">Go to Bracket Builder</a>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD TAB -->
+<div class="tab-view" id="tab-leaderboard">
+  <div class="container">
+    <div class="section-header" style="margin-top: 0;">
+      <div class="section-title">
+        <span class="section-title-icon">🏆</span>
+        <div>
+          <div class="section-title-text">Leaderboard</div>
+          <div class="section-sub" id="lbCount">Top players · updated after each game</div>
+        </div>
+      </div>
+    </div>
+    <div id="leaderboardContent"></div>
+  </div>
+</div>
+
+<!-- RULES TAB -->
+<div class="tab-view" id="tab-rules">
+  <div class="container">
+    <div class="section-header" style="margin-top: 0;">
+      <div class="section-title">
+        <span class="section-title-icon">📋</span>
+        <div>
+          <div class="section-title-text">How It Works</div>
+          <div class="section-sub">Official scoring rules · 2026 NBA Playoff Challenge</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-2); border: 1px solid var(--line); padding: 24px 20px; margin-bottom: 20px;">
+      <div style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.05em; margin-bottom: 12px; color: var(--accent);">Filling Out Your Bracket</div>
+      <p style="color: var(--ink-2); line-height: 1.7; font-size: 14px;">Before Round 1 tips off, submit: every series winner (Round 1 through Finals), every series length (in 4, 5, 6, or 7 games), three MVP picks (East Conf Finals, West Conf Finals, NBA Finals MVP), and a tiebreaker — combined total points scored in Game 1 of the NBA Finals.</p>
+      <p style="color: var(--ink-dim); font-size: 13px; margin-top: 10px;">Once Round 1 starts, picks are locked. No changes allowed.</p>
+    </div>
+
+    <div style="background: var(--bg-2); border: 1px solid var(--line); padding: 24px 20px; margin-bottom: 20px;">
+      <div style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.05em; margin-bottom: 16px; color: var(--accent);">Main Bracket — Series Winners</div>
+      <p style="color: var(--ink-dim); font-size: 13px; margin-bottom: 14px;">Points double each round. Max 32 pts.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+        <div style="background: var(--bg-3); padding: 14px; border-radius: 6px; text-align: center;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Round 1</div>
+          <div style="font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--ink);">1 pt</div>
+          <div style="font-size: 11px; color: var(--ink-dim);">× 8 series = 8 pts</div>
+        </div>
+        <div style="background: var(--bg-3); padding: 14px; border-radius: 6px; text-align: center;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Round 2</div>
+          <div style="font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--ink);">2 pts</div>
+          <div style="font-size: 11px; color: var(--ink-dim);">× 4 series = 8 pts</div>
+        </div>
+        <div style="background: var(--bg-3); padding: 14px; border-radius: 6px; text-align: center;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Conf Finals</div>
+          <div style="font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--ink);">4 pts</div>
+          <div style="font-size: 11px; color: var(--ink-dim);">× 2 series = 8 pts</div>
+        </div>
+      </div>
+      <div style="background: var(--bg-3); padding: 14px; border-radius: 6px; text-align: center; margin-top: 10px;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">NBA Finals</div>
+        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--gold);">8 pts</div>
+        <div style="font-size: 11px; color: var(--ink-dim);">× 1 series = 8 pts</div>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-2); border: 1px solid var(--line); padding: 24px 20px; margin-bottom: 20px;">
+      <div style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.05em; margin-bottom: 12px; color: var(--accent);">Series Length Bonus</div>
+      <p style="color: var(--ink-2); font-size: 14px; margin-bottom: 14px; line-height: 1.6;">Correctly call the exact series length (e.g. "Celtics in 6") to earn a bonus. Must have the winner right to earn it. Max 18 pts.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">
+        <div style="background: var(--bg-3); padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 10px; color: var(--ink-dim); margin-bottom: 4px;">Round 1</div>
+          <div style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--ink);">+1</div>
+        </div>
+        <div style="background: var(--bg-3); padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 10px; color: var(--ink-dim); margin-bottom: 4px;">Round 2</div>
+          <div style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--ink);">+1</div>
+        </div>
+        <div style="background: var(--bg-3); padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 10px; color: var(--ink-dim); margin-bottom: 4px;">Conf Finals</div>
+          <div style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--ink);">+2</div>
+        </div>
+        <div style="background: var(--bg-3); padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 10px; color: var(--gold); margin-bottom: 4px;">Finals</div>
+          <div style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--gold);">+2</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-2); border: 1px solid var(--line); padding: 24px 20px; margin-bottom: 20px;">
+      <div style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.05em; margin-bottom: 12px; color: var(--accent);">MVP Bonuses</div>
+      <p style="color: var(--ink-2); font-size: 14px; margin-bottom: 14px; line-height: 1.6;">Pick any player in the league for each MVP award. Locked in with your bracket. Max 3 pts.</p>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-3); border-radius: 6px;">
+          <span style="font-size: 14px; color: var(--ink-2);">Eastern Conf Finals MVP</span>
+          <span style="font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--east);">1 pt</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-3); border-radius: 6px;">
+          <span style="font-size: 14px; color: var(--ink-2);">Western Conf Finals MVP</span>
+          <span style="font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--west);">1 pt</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-3); border-radius: 6px; border: 1px solid var(--gold);">
+          <span style="font-size: 14px; color: var(--ink-2);">NBA Finals MVP</span>
+          <span style="font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--gold);">1 pt</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-2); border: 1px solid var(--line); padding: 24px 20px; margin-bottom: 20px;">
+      <div style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.05em; margin-bottom: 16px; color: var(--accent);">Maximum Possible Score</div>
+      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px;"><span style="color: var(--ink-2);">Main bracket</span><span style="color: var(--ink); font-weight: 600;">32 pts</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px;"><span style="color: var(--ink-2);">Series length bonuses</span><span style="color: var(--ink); font-weight: 600;">18 pts</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px;"><span style="color: var(--ink-2);">MVP bonuses</span><span style="color: var(--ink); font-weight: 600;">3 pts</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 14px 0 0; font-size: 16px; font-weight: 700;"><span style="color: var(--ink);">Total possible</span><span style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--gold);">53 pts</span></div>
+    </div>
+
+    <div style="background: var(--bg-2); border: 1px solid var(--line); padding: 24px 20px; margin-bottom: 40px;">
+      <div style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.05em; margin-bottom: 12px; color: var(--accent);">Tiebreaker</div>
+      <div style="color: var(--ink-2); font-size: 14px; line-height: 1.7;">
+        <p>If two or more players finish tied, the closest guess for the <strong style="color: var(--ink);">combined total points scored in Game 1 of the NBA Finals</strong> wins. Still tied after that? We'll split the prize or settle it like gentlemen.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<a href="admin.html" class="admin-link">admin</a>
+
+<script>
+  const SUPABASE_URL = 'https://qnelpzjajmhfucptaqiq.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuZWxwempham1oZnVjcHRhcWlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzODU2OTQsImV4cCI6MjA5MTk2MTY5NH0.WPfLwEkYZIJ3RTl9jXvvNjbN7jw8kjpqFXWwpqRk1bA';
+
+  const LOCK_DATE = new Date('2026-04-18T17:00:00Z');
+
+  const UPCOMING_GAMES = [
+    { date: '2026-04-18', time: '1:00 PM ET', home: 'Cavaliers', away: 'Raptors', conf: 'east', game: 'Game 1' },
+    { date: '2026-04-18', time: '6:00 PM ET', home: 'Knicks', away: 'Hawks', conf: 'east', game: 'Game 1' },
+    { date: '2026-04-18', time: '8:30 PM ET', home: 'Lakers', away: 'Rockets', conf: 'west', game: 'Game 1' },
+    { date: '2026-04-19', time: '1:00 PM ET', home: 'Celtics', away: '76ers', conf: 'east', game: 'Game 1' },
+    { date: '2026-04-19', time: '3:30 PM ET', home: 'Thunder', away: 'Play-in Winner', conf: 'west', game: 'Game 1' },
+    { date: '2026-04-19', time: '6:30 PM ET', home: 'Pistons', away: 'Play-in Winner', conf: 'east', game: 'Game 1' },
+    { date: '2026-04-19', time: '9:30 PM ET', home: 'Nuggets', away: 'Timberwolves', conf: 'west', game: 'Game 1' },
+    { date: '2026-04-19', time: '10:00 PM ET', home: 'Spurs', away: 'Trail Blazers', conf: 'west', game: 'Game 1' }
+  ];
+
+  function updateCountdown() {
+    const now = new Date();
+    const diff = LOCK_DATE - now;
+
+    if (diff <= 0) {
+      document.getElementById('countdownKicker').innerHTML = '<span style="color: var(--ok);">Locked</span>';
+      document.getElementById('countdown').innerHTML = '00<span class="sep">:</span>00<span class="sep">:</span>00<span class="sep">:</span>00';
+      const cta = document.getElementById('ctaBtn');
+      cta.style.background = 'var(--line)';
+      cta.style.color = 'var(--ink-dim)';
+      cta.textContent = 'Brackets Locked';
+      cta.removeAttribute('href');
+      cta.style.cursor = 'not-allowed';
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    const pad = (n) => String(n).padStart(2, '0');
+    document.getElementById('countdown').innerHTML = 
+      `${pad(days)}<span class="sep">:</span>${pad(hours)}<span class="sep">:</span>${pad(minutes)}<span class="sep">:</span>${pad(seconds)}`;
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  function renderGames() {
+    const list = document.getElementById('gamesList');
+    list.innerHTML = '';
+    UPCOMING_GAMES.forEach(g => {
+      const d = new Date(g.date + 'T12:00:00');
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.innerHTML = `
+        <div class="game-date">
+          <div class="game-date-month">${monthNames[d.getMonth()]}</div>
+          <div class="game-date-day">${d.getDate()}</div>
+          <div class="game-date-dow">${dowNames[d.getDay()]}</div>
+        </div>
+        <div class="game-matchup">
+          <div class="game-teams">${g.away} <span class="vs">@</span> ${g.home}</div>
+          <div class="game-meta">
+            <span class="game-tag ${g.conf}">${g.conf}ern</span>
+            <span>${g.game}</span>
+          </div>
+        </div>
+        <div>
+          <div class="game-time">${g.time.split(' ')[0]}</div>
+          <div class="game-time-pm">${g.time.split(' ').slice(1).join(' ')}</div>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  }
+  renderGames();
+
+  let currentUser = localStorage.getItem('bracketPoolUser') || null;
+  let allBrackets = [];
+  let supa = null;
+  let results = null;
+
+  const ROUND_POINTS = { round1: 1, round2: 2, round3: 4, round4: 8 };
+  const LENGTH_BONUS = { round1: 1, round2: 1, round3: 2, round4: 2 };
+  const MVP_POINTS = { east: 1, west: 1, finals: 1 };
+
+  async function fetchBrackets() {
+    if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE') {
+      document.getElementById('configWarning').style.display = 'block';
+      return [];
+    }
+    if (!supa) supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data, error } = await supa.from('brackets').select('*').order('submitted_at', { ascending: false });
+    if (error) { console.error(error); return []; }
+    return data || [];
+  }
+
+  async function fetchResults() {
+    if (!supa) return null;
+    const { data } = await supa.from('results').select('*').eq('id', 1).single();
+    return data?.results_json || null;
+  }
+
+  function calcScore(bracket) {
+    if (!results) return { total: 0, correctPicks: 0, totalScored: 0 };
+    let total = 0;
+    let correctPicks = 0;
+    let totalScored = 0;
+
+    ['round1', 'round2', 'round3', 'round4'].forEach(r => {
+      const actualRound = results[r] || {};
+      const pickRound = bracket.picks_json?.[r] || {};
+      Object.keys(actualRound).forEach(sid => {
+        const actual = actualRound[sid];
+        const pick = pickRound[sid];
+        if (!actual || !actual.winner) return;
+        totalScored++;
+        if (pick?.winner === actual.winner) {
+          total += ROUND_POINTS[r];
+          correctPicks++;
+          if (pick.length && actual.length && pick.length === actual.length) {
+            total += LENGTH_BONUS[r];
+          }
+        }
+      });
+    });
+
+    if (results.mvp_east && bracket.mvp_east && results.mvp_east.toLowerCase() === bracket.mvp_east.toLowerCase()) total += MVP_POINTS.east;
+    if (results.mvp_west && bracket.mvp_west && results.mvp_west.toLowerCase() === bracket.mvp_west.toLowerCase()) total += MVP_POINTS.west;
+    if (results.mvp_finals && bracket.mvp_finals && results.mvp_finals.toLowerCase() === bracket.mvp_finals.toLowerCase()) total += MVP_POINTS.finals;
+
+    return { total, correctPicks, totalScored };
+  }
+
+  function calculateLeaderboard(brackets) {
+    const scored = brackets.map(b => {
+      const { total, correctPicks, totalScored } = calcScore(b);
+      const pct = totalScored > 0 ? Math.round((correctPicks / totalScored) * 100) : 0;
+      return { ...b, total, correctPicks, totalScored, pct };
+    });
+    scored.sort((a, b) => {
+      if (b.total !== a.total) return b.total - a.total;
+      if (results?.finals_games != null) {
+        const aDiff = a.tiebreaker != null ? Math.abs(results.finals_games - a.tiebreaker) : 999;
+        const bDiff = b.tiebreaker != null ? Math.abs(results.finals_games - b.tiebreaker) : 999;
+        return aDiff - bDiff;
+      }
+      return 0;
+    });
+    scored.forEach((s, i) => s.rank = i + 1);
+    return scored;
+  }
+
+  function renderMyBracket() {
+    const container = document.getElementById('myBracketContent');
+    if (!currentUser || !allBrackets.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-title">No bracket yet</div>
+          <div class="empty-sub">Create yours before tipoff</div>
+        </div>
+      `;
+      return;
+    }
+
+    const myBracket = allBrackets.find(b => b.player_name?.toLowerCase() === currentUser.toLowerCase());
+    if (!myBracket) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-title">Hi ${escapeHtml(currentUser)} 👋</div>
+          <div class="empty-sub">You haven't submitted yet</div>
+        </div>
+      `;
+      return;
+    }
+
+    const ranked = calculateLeaderboard(allBrackets);
+    const myEntry = ranked.find(r => r.id === myBracket.id);
+    const rank = myEntry?.rank ?? '—';
+
+    container.innerHTML = `
+      <a href="bracket.html" class="my-bracket-content" style="text-decoration:none; color:inherit; cursor:pointer;">
+        <div class="bracket-icon">🏀</div>
+        <div class="bracket-info">
+          <div class="bracket-name">${escapeHtml(myBracket.player_name)}</div>
+          <div class="bracket-status">Rank #${rank} · Tap to view</div>
+        </div>
+      </a>
+    `;
+  }
+
+  function renderMiniLeaderboard() {
+    const container = document.getElementById('miniLeaderboardContent');
+    const countEl = document.getElementById('miniLbCount');
+    
+    if (!allBrackets.length) {
+      countEl.textContent = '0 entries';
+      container.innerHTML = `
+        <div style="text-align: center; padding: 20px 0; color: var(--ink-dim); font-size: 13px;">
+          No submissions yet
+        </div>
+      `;
+      return;
+    }
+
+    const ranked = calculateLeaderboard(allBrackets);
+    const top5 = ranked.slice(0, 5);
+    countEl.textContent = `${allBrackets.length} ${allBrackets.length === 1 ? 'entry' : 'entries'}`;
+
+    let html = '';
+    top5.forEach(r => {
+      const rankClass = r.rank <= 3 ? 'top' : '';
+      html += `
+        <div class="lb-row">
+          <div class="lb-rank ${rankClass}">${r.rank}</div>
+          <div class="lb-name">${escapeHtml(r.player_name)}</div>
+          <div class="lb-pts">${r.total}</div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function renderLeaderboard() {
+    const container = document.getElementById('leaderboardContent');
+    const count = document.getElementById('lbCount');
+
+    if (allBrackets.length === 0) {
+      count.textContent = 'No submissions yet';
+      container.innerHTML = `
+        <div class="empty-leaderboard">
+          <div class="empty-state-title">No brackets yet</div>
+          <p>Be the first to submit yours.</p>
+          <a href="bracket.html" class="cta-btn" style="max-width: 300px; margin-top: 20px;">Create Bracket</a>
+        </div>
+      `;
+      return;
+    }
+
+    const ranked = calculateLeaderboard(allBrackets);
+    count.textContent = `${ranked.length} ${ranked.length === 1 ? 'submission' : 'submissions'}`;
+
+    // Calculate round-by-round stats for each bracket
+    const withRoundStats = ranked.map(b => {
+      const stats = { round1: {correct: 0, total: 0}, round2: {correct: 0, total: 0}, round3: {correct: 0, total: 0}, round4: {correct: 0, total: 0} };
+      
+      if (results) {
+        ['round1', 'round2', 'round3', 'round4'].forEach(r => {
+          const actualRound = results[r] || {};
+          const pickRound = b.picks_json?.[r] || {};
+          Object.keys(actualRound).forEach(sid => {
+            const actual = actualRound[sid];
+            if (actual?.winner) {
+              stats[r].total++;
+              if (pickRound[sid]?.winner === actual.winner) {
+                stats[r].correct++;
+              }
+            }
+          });
+        });
+      }
+      
+      return { ...b, roundStats: stats };
+    });
+
+    let html = `
+      <div class="leaderboard-wrapper">
+        <table class="leaderboard-table">
+          <thead><tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th class="right">Pts</th>
+            <th class="right">Pct</th>
+            <th style="text-align: center;">Round 1</th>
+            <th style="text-align: center;">Semifinals</th>
+            <th style="text-align: center;">Conf Finals</th>
+            <th style="text-align: center;">Finals</th>
+          </tr></thead>
+          <tbody>
+    `;
+    
+    withRoundStats.forEach(r => {
+      const rankClass = r.rank === 1 ? 'top-1' : r.rank === 2 ? 'top-2' : r.rank === 3 ? 'top-3' : '';
+      const isMe = currentUser && r.player_name?.toLowerCase() === currentUser.toLowerCase();
+      
+      html += `
+        <tr style="${isMe ? 'background: rgba(196, 178, 152, 0.08);' : ''}">
+          <td class="lb-rank-cell ${rankClass}">${r.rank}</td>
+          <td class="lb-name-cell">${escapeHtml(r.player_name)}${isMe ? ' <span style="color: var(--accent); font-size: 11px; font-weight: 400;">(you)</span>' : ''}</td>
+          <td class="lb-pts-cell">${r.total}</td>
+          <td class="lb-pct-cell">${r.pct}%</td>
+          <td class="lb-round-cell">
+            <span class="lb-round-num">${r.roundStats.round1.correct}</span><span class="lb-round-total">/${r.roundStats.round1.total || 8}</span>
+          </td>
+          <td class="lb-round-cell">
+            <span class="lb-round-num">${r.roundStats.round2.correct}</span><span class="lb-round-total">/${r.roundStats.round2.total || 4}</span>
+          </td>
+          <td class="lb-round-cell">
+            <span class="lb-round-num">${r.roundStats.round3.correct}</span><span class="lb-round-total">/${r.roundStats.round3.total || 2}</span>
+          </td>
+          <td class="lb-round-cell">
+            <span class="lb-round-num">${r.roundStats.round4.correct}</span><span class="lb-round-total">/${r.roundStats.round4.total || 1}</span>
+          </td>
+        </tr>
+      `;
+    });
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+  }
+
+  document.querySelectorAll('.tab-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      if (tab === 'my') {
+        window.location.href = 'bracket.html';
+        return;
+      }
+      document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-view').forEach(v => {
+        v.classList.remove('active', 'fade-in');
+      });
+      const target = document.getElementById('tab-' + tab);
+      target.classList.add('active');
+      void target.offsetWidth;
+      target.classList.add('fade-in');
+      if (tab === 'leaderboard') renderLeaderboard();
+    });
+  });
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  (async function init() {
+    // Restore tab if navigated from bracket page
+    const savedTab = sessionStorage.getItem('activeTab');
+    if (savedTab && savedTab !== 'home') {
+      sessionStorage.removeItem('activeTab');
+      const btn = document.querySelector(`.tab-nav-btn[data-tab="${savedTab}"]`);
+      if (btn) btn.click();
+    }
+
+    allBrackets = await fetchBrackets();
+    results = await fetchResults();
+    renderMyBracket();
+    renderMiniLeaderboard();
+  })();
+</script>
+</body>
+</html>

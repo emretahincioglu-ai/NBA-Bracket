@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — Bracket Pool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-2: #141414;
+    --ink: #f5f1e8;
+    --ink-dim: #8a8378;
+    --accent: #C4B298;
+    --line: #222;
+    --ok: #4ade80;
+    --warn: #facc15;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Archivo', sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-bottom: 32px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* LOGIN */
+  .login-screen {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 40px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+  }
+  .login-screen h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    margin-bottom: 20px;
+  }
+  .login-screen input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .login-screen input:focus { outline: none; border-color: var(--accent); }
+  .login-screen button {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .tab {
+    background: transparent;
+    border: none;
+    color: var(--ink-dim);
+    padding: 12px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* LEADERBOARD */
+  .leaderboard {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  .leaderboard th {
+    text-align: left;
+    padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    border-bottom: 1px solid var(--line);
+  }
+  .leaderboard td {
+    padding: 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .leaderboard tr:hover { background: var(--bg-2); cursor: pointer; }
+  .rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--accent);
+    width: 50px;
+  }
+  .rank.top-1 { color: gold; }
+  .rank.top-2 { color: #c0c0c0; }
+  .rank.top-3 { color: #cd7f32; }
+  .score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--ink);
+  }
+  .score-max {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-left: 4px;
+  }
+
+  /* RESULTS ENTRY */
+  .results-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .results-form { grid-template-columns: 1fr; } }
+
+  .result-round {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    padding: 24px;
+  }
+  .result-round h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: var(--accent);
+  }
+  .result-series {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .result-series:last-child { border: none; }
+  .result-series-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+  }
+  .result-inputs {
+    display: grid;
+    grid-template-columns: 1fr 100px;
+    gap: 8px;
+  }
+  .result-inputs input, .result-inputs select {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 10px;
+    font-family: 'Archivo', sans-serif;
+    font-size: 14px;
+  }
+  .result-inputs input:focus, .result-inputs select:focus { outline: none; border-color: var(--accent); }
+
+  .save-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 14px 32px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    margin-top: 24px;
+  }
+  .save-btn:hover { background: #ff6b3d; }
+
+  /* DETAIL MODAL */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    font-size: 24px;
+    cursor: pointer;
+  }
+  .pick-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 60px;
+    gap: 12px;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .pick-round-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  .correct { color: var(--ok); }
+  .wrong { color: var(--accent); }
+
+  /* EMPTY STATE */
+  .empty {
+    padding: 80px 20px;
+    text-align: center;
+    color: var(--ink-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  .config-warning {
+    background: #1a1208;
+    border: 1px solid var(--warn);
+    color: var(--warn);
+    padding: 16px;
+    margin-bottom: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-box {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    padding: 20px;
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-screen">
+  <h2>Admin Access</h2>
+  <p style="color: var(--ink-dim); font-size: 13px; margin-bottom: 20px;">Enter password to view submissions.</p>
+  <input type="password" id="adminPass" placeholder="password" />
+  <button onclick="checkLogin()">Enter</button>
+  <p id="loginErr" style="color: var(--accent); font-size: 12px; margin-top: 12px;"></p>
+</div>
+
+<!-- MAIN -->
+<div id="adminScreen" class="container" style="display:none;">
+  <h1>Bracket Pool <span style="color: var(--accent);">Admin</span></h1>
+  <div class="subtitle">Dashboard · Results Entry · Leaderboard</div>
+
+  <div id="configWarning" class="config-warning" style="display:none;">
+    ⚠ Supabase not configured. Edit this file to set SUPABASE_URL and SUPABASE_ANON_KEY.
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-lbl">Submissions</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statLeader">—</div>
+      <div class="stat-lbl">Current Leader</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statTopScore">0</div>
+      <div class="stat-lbl">Top Score</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statAvg">0</div>
+      <div class="stat-lbl">Avg Score</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('leaderboard')">Leaderboard</button>
+    <button class="tab" onclick="showTab('results')">Enter Results</button>
+    <button class="tab" onclick="showTab('export')">Export</button>
+  </div>
+
+  <!-- LEADERBOARD TAB -->
+  <div class="tab-content active" id="tab-leaderboard">
+    <div id="leaderboardWrap">
+      <div class="empty">Loading submissions...</div>
+    </div>
+  </div>
+
+  <!-- RESULTS TAB -->
+  <div class="tab-content" id="tab-results">
+    <p style="color: var(--ink-dim); margin-bottom: 20px; font-size: 14px;">
+      Enter actual playoff results as they happen. Leaderboard auto-calculates.
+    </p>
+    <div class="results-form" id="resultsForm"></div>
+    <button class="save-btn" onclick="saveResults()">Save Results</button>
+    <p id="resultsStatus" style="color: var(--ok); font-size: 13px; margin-top: 12px;"></p>
+  </div>
+
+  <!-- EXPORT TAB -->
+  <div class="tab-content" id="tab-export">
+    <p style="color: var(--ink-dim); margin-bottom: 16px; font-size: 14px;">
+      Download all submissions as CSV. Open in Excel, Google Sheets, etc.
+    </p>
+    <button class="save-btn" onclick="exportCSV()">Download CSV</button>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+  // ============================================
+  // CONFIG — MUST MATCH index.html
+  // ============================================
+  const SUPABASE_URL = 'https://qnelpzjajmhfucptaqiq.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuZWxwempham1oZnVjcHRhcWlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzODU2OTQsImV4cCI6MjA5MTk2MTY5NH0.WPfLwEkYZIJ3RTl9jXvvNjbN7jw8kjpqFXWwpqRk1bA';
+  const ADMIN_PASSWORD = 'notfromhere'; // set your password here
+  // ============================================
+
+  let supa = null;
+  let brackets = [];
+  let results = null;
+
+  // Scoring rules
+  const ROUND_POINTS = { round1: 1, round2: 2, round3: 4, round4: 8 };
+  const LENGTH_BONUS = { round1: 1, round2: 1, round3: 2, round4: 2 };
+  const MVP_POINTS = { east: 1, west: 1, finals: 1 };
+
+  function checkLogin() {
+    const pass = document.getElementById('adminPass').value;
+    if (pass === ADMIN_PASSWORD) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminScreen').style.display = 'block';
+      init();
+    } else {
+      document.getElementById('loginErr').textContent = 'Wrong password';
+    }
+  }
+  document.getElementById('adminPass').addEventListener('keypress', e => {
+    if (e.key === 'Enter') checkLogin();
+  });
+
+  async function init() {
+    if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE') {
+      document.getElementById('configWarning').style.display = 'block';
+      renderResultsForm();
+      renderLeaderboard();
+      return;
+    }
+    supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    await loadBrackets();
+    await loadResults();
+    renderLeaderboard();
+    renderResultsForm();
+  }
+
+  async function loadBrackets() {
+    const { data, error } = await supa.from('brackets').select('*').order('submitted_at', { ascending: true });
+    if (error) { console.error(error); return; }
+    brackets = data || [];
+  }
+
+  async function loadResults() {
+    const { data, error } = await supa.from('results').select('*').eq('id', 1).single();
+    if (data) results = data.results_json;
+    else results = defaultResults();
+  }
+
+  function defaultResults() {
+    return {
+      round1: {}, round2: {}, round3: {}, round4: {},
+      mvp_east: '', mvp_west: '', mvp_finals: '',
+      finals_games: null
+    };
+  }
+
+  // Calculate score for a bracket
+  function calcScore(bracket) {
+    if (!results) return { total: 0, breakdown: {} };
+    let total = 0;
+    const br = { bracket: 0, length: 0, mvp: 0, details: [] };
+
+    ['round1', 'round2', 'round3', 'round4'].forEach(r => {
+      const actualRound = results[r] || {};
+      const pickRound = bracket.picks_json[r] || {};
+
+      Object.keys(actualRound).forEach(sid => {
+        const actual = actualRound[sid];
+        const pick = pickRound[sid];
+        if (!actual || !actual.winner || !pick) return;
+
+        let pts = 0;
+        const winnerCorrect = pick.winner === actual.winner;
+        if (winnerCorrect) {
+          pts += ROUND_POINTS[r];
+          br.bracket += ROUND_POINTS[r];
+          if (pick.length && actual.length && pick.length === actual.length) {
+            pts += LENGTH_BONUS[r];
+            br.length += LENGTH_BONUS[r];
+          }
+        }
+        total += pts;
+      });
+    });
+
+    // MVPs
+    if (results.mvp_east && bracket.mvp_east && results.mvp_east.toLowerCase() === bracket.mvp_east.toLowerCase()) {
+      total += MVP_POINTS.east;
+      br.mvp += MVP_POINTS.east;
+    }
+    if (results.mvp_west && bracket.mvp_west && results.mvp_west.toLowerCase() === bracket.mvp_west.toLowerCase()) {
+      total += MVP_POINTS.west;
+      br.mvp += MVP_POINTS.west;
+    }
+    if (results.mvp_finals && bracket.mvp_finals && results.mvp_finals.toLowerCase() === bracket.mvp_finals.toLowerCase()) {
+      total += MVP_POINTS.finals;
+      br.mvp += MVP_POINTS.finals;
+    }
+
+    br.total = total;
+    br.tbDiff = (results.finals_games != null && bracket.tiebreaker != null)
+      ? Math.abs(results.finals_games - bracket.tiebreaker) : 999;
+    return br;
+  }
+
+  function renderLeaderboard() {
+    const wrap = document.getElementById('leaderboardWrap');
+    if (brackets.length === 0) {
+      wrap.innerHTML = '<div class="empty">No submissions yet. Share the site!</div>';
+      document.getElementById('statTotal').textContent = '0';
+      return;
+    }
+
+    const scored = brackets.map(b => ({ ...b, ...calcScore(b) }));
+    scored.sort((a, b) => {
+      if (b.total !== a.total) return b.total - a.total;
+      return a.tbDiff - b.tbDiff;
+    });
+
+    // Stats
+    document.getElementById('statTotal').textContent = brackets.length;
+    document.getElementById('statLeader').textContent = scored[0]?.player_name || '—';
+    document.getElementById('statTopScore').textContent = scored[0]?.total || 0;
+    const avg = brackets.length > 0 ? (scored.reduce((s, b) => s + b.total, 0) / brackets.length).toFixed(1) : 0;
+    document.getElementById('statAvg').textContent = avg;
+
+    let html = `
+      <table class="leaderboard">
+        <thead><tr>
+          <th>Rank</th><th>Name</th><th>Total</th><th>Bracket</th><th>Length</th><th>MVP</th><th>Finals</th><th>TB</th>
+        </tr></thead>
+        <tbody>
+    `;
+    scored.forEach((b, i) => {
+      const rankClass = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
+      html += `
+        <tr onclick="showDetail('${b.id}')">
+          <td class="rank ${rankClass}">${i + 1}</td>
+          <td><strong>${escapeHtml(b.player_name)}</strong></td>
+          <td><span class="score">${b.total}</span><span class="score-max">/56</span></td>
+          <td>${b.bracket}</td>
+          <td>${b.length}</td>
+          <td>${b.mvp}</td>
+          <td>${escapeHtml(b.mvp_finals || '—')}</td>
+          <td style="color: var(--ink-dim);">${b.tiebreaker || '—'}</td>
+        </tr>
+      `;
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  }
+
+  function renderResultsForm() {
+    const form = document.getElementById('resultsForm');
+    const rounds = [
+      { key: 'round1', title: 'Round 1', series: ['E1','E2','E3','E4','W1','W2','W3','W4'] },
+      { key: 'round2', title: 'Round 2 (Semis)', series: ['EE1','EE2','WW1','WW2'] },
+      { key: 'round3', title: 'Conference Finals', series: ['ECF','WCF'] },
+      { key: 'round4', title: 'NBA Finals', series: ['FIN'] }
+    ];
+    if (!results) results = defaultResults();
+
+    let html = '';
+    rounds.forEach(r => {
+      html += `<div class="result-round"><h3>${r.title}</h3>`;
+      r.series.forEach(sid => {
+        const existing = results[r.key]?.[sid] || {};
+        html += `
+          <div class="result-series">
+            <div class="result-series-label">${sid}</div>
+            <div class="result-inputs">
+              <input type="text" placeholder="Winner team name" value="${existing.winner || ''}" data-round="${r.key}" data-sid="${sid}" data-field="winner" />
+              <select data-round="${r.key}" data-sid="${sid}" data-field="length">
+                <option value="">Games</option>
+                <option value="4" ${existing.length == 4 ? 'selected' : ''}>In 4</option>
+                <option value="5" ${existing.length == 5 ? 'selected' : ''}>In 5</option>
+                <option value="6" ${existing.length == 6 ? 'selected' : ''}>In 6</option>
+                <option value="7" ${existing.length == 7 ? 'selected' : ''}>In 7</option>
+              </select>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    });
+
+    html += `
+      <div class="result-round">
+        <h3>MVPs & Tiebreaker</h3>
+        <div class="result-series">
+          <div class="result-series-label">East Conf. MVP (1 pt)</div>
+          <input type="text" placeholder="Player name" value="${results.mvp_east || ''}" data-field="mvp_east" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:10px;font-family:'Archivo',sans-serif;font-size:14px;" />
+        </div>
+        <div class="result-series">
+          <div class="result-series-label">West Conf. MVP (1 pt)</div>
+          <input type="text" placeholder="Player name" value="${results.mvp_west || ''}" data-field="mvp_west" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:10px;font-family:'Archivo',sans-serif;font-size:14px;" />
+        </div>
+        <div class="result-series">
+          <div class="result-series-label">Finals MVP (3 pts)</div>
+          <input type="text" placeholder="Player name" value="${results.mvp_finals || ''}" data-field="mvp_finals" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:10px;font-family:'Archivo',sans-serif;font-size:14px;" />
+        </div>
+        <div class="result-series">
+          <div class="result-series-label">Finals Total Games (tiebreaker)</div>
+          <input type="number" min="4" max="7" placeholder="4-7" value="${results.finals_games || ''}" data-field="finals_games" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:10px;font-family:'Archivo',sans-serif;font-size:14px;" />
+        </div>
+      </div>
+    `;
+    form.innerHTML = html;
+  }
+
+  async function saveResults() {
+    const inputs = document.querySelectorAll('#resultsForm input, #resultsForm select');
+    const newResults = defaultResults();
+    inputs.forEach(inp => {
+      const round = inp.dataset.round;
+      const sid = inp.dataset.sid;
+      const field = inp.dataset.field;
+      const val = inp.value.trim();
+      if (round && sid) {
+        newResults[round][sid] = newResults[round][sid] || {};
+        if (field === 'length') newResults[round][sid].length = val ? parseInt(val) : null;
+        else newResults[round][sid].winner = val;
+      } else if (field) {
+        newResults[field] = field === 'finals_games' && val ? parseInt(val) : val;
+      }
+    });
+
+    results = newResults;
+    const status = document.getElementById('resultsStatus');
+
+    if (!supa) {
+      status.textContent = 'Demo mode — saved locally. Leaderboard updated.';
+      renderLeaderboard();
+      return;
+    }
+
+    const { error } = await supa.from('results').upsert([{ id: 1, results_json: newResults }]);
+    if (error) {
+      status.style.color = 'var(--accent)';
+      status.textContent = 'Error: ' + error.message;
+    } else {
+      status.style.color = 'var(--ok)';
+      status.textContent = '✓ Saved · Leaderboard updated';
+      renderLeaderboard();
+    }
+    setTimeout(() => status.textContent = '', 5000);
+  }
+
+  function showDetail(id) {
+    const b = brackets.find(x => String(x.id) === String(id));
+    if (!b) return;
+    const score = calcScore(b);
+    let html = `<h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;margin-bottom:8px;">${escapeHtml(b.player_name)}</h2>`;
+    html += `<div style="color:var(--ink-dim);font-family:'JetBrains Mono',monospace;font-size:12px;margin-bottom:20px;">
+      Total: ${score.total}/56 · Bracket: ${score.bracket} · Length: ${score.length} · MVP: ${score.mvp}
+    </div>`;
+
+    ['round1', 'round2', 'round3', 'round4'].forEach(r => {
+      const roundName = { round1: 'Round 1', round2: 'Round 2', round3: 'Conf Finals', round4: 'NBA Finals' }[r];
+      html += `<div class="pick-round-label">${roundName}</div>`;
+      const pickRound = b.picks_json[r] || {};
+      Object.keys(pickRound).forEach(sid => {
+        const pick = pickRound[sid];
+        const actual = results?.[r]?.[sid];
+        let winnerClass = '';
+        let lengthClass = '';
+        if (actual?.winner) {
+          winnerClass = pick.winner === actual.winner ? 'correct' : 'wrong';
+          if (pick.winner === actual.winner && actual.length && pick.length === actual.length) lengthClass = 'correct';
+          else if (actual.length && pick.length !== actual.length) lengthClass = 'wrong';
+        }
+        html += `<div class="pick-row">
+          <div><strong>${sid}</strong> <span class="${winnerClass}">${escapeHtml(pick.winner || '—')}</span></div>
+          <div class="${lengthClass}">in ${pick.length || '—'}</div>
+          <div style="color:var(--ink-dim);">${actual?.winner ? `(Actual: ${escapeHtml(actual.winner)} in ${actual.length || '?'})` : ''}</div>
+        </div>`;
+      });
+    });
+
+    html += `<div class="pick-round-label">MVPs</div>`;
+    html += `<div class="pick-row"><div>East: <strong>${escapeHtml(b.mvp_east)}</strong></div><div>West: <strong>${escapeHtml(b.mvp_west)}</strong></div><div></div></div>`;
+    html += `<div class="pick-row"><div>Finals: <strong>${escapeHtml(b.mvp_finals)}</strong></div><div>TB: ${b.tiebreaker}</div><div></div></div>`;
+
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modalBackdrop').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('modalBackdrop').classList.remove('show');
+  }
+  document.getElementById('modalBackdrop').addEventListener('click', e => {
+    if (e.target.id === 'modalBackdrop') closeModal();
+  });
+
+  function showTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  function exportCSV() {
+    if (brackets.length === 0) { alert('No submissions yet'); return; }
+    const rows = [['Name','Total','Bracket','Length','MVP','MVP East','MVP West','MVP Finals','Tiebreaker','Submitted']];
+    const scored = brackets.map(b => ({ ...b, ...calcScore(b) }));
+    scored.sort((a, b) => b.total - a.total);
+    scored.forEach(b => {
+      rows.push([
+        b.player_name, b.total, b.bracket, b.length, b.mvp,
+        b.mvp_east, b.mvp_west, b.mvp_finals,
+        b.tiebreaker, b.submitted_at
+      ]);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bracket-pool-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+</script>
+</body>
+</html>
