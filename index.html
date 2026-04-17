@@ -4,6 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NBA Playoff Challenge · 2026</title>
+
+<!-- App icons & Home Screen support -->
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NBA Bracket">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="description" content="Private bracket pool for the 2026 NBA Playoffs.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -671,8 +682,8 @@
         </div>
         <div class="countdown-label">Days : Hours : Min : Sec</div>
         <div class="cta-title">Create Your<br>Bracket</div>
-        <a href="bracket.html" class="cta-btn" id="ctaBtn">Get Started →</a>
-        <div class="cta-sub">Free to play · No sign-up required</div>
+        <a href="signup.html" class="cta-btn" id="ctaBtn" data-cta="get-started">Get Started →</a>
+        <div class="cta-sub">Private pool · One bracket per player</div>
       </div>
 
       <!-- Right Column -->
@@ -730,7 +741,7 @@
     <div class="empty-leaderboard">
       <div class="empty-state-title">Your Bracket</div>
       <p style="margin-bottom: 20px; font-size: 14px;">Opening the bracket builder...</p>
-      <a href="bracket.html" class="cta-btn" style="max-width: 300px;">Go to Bracket Builder</a>
+      <a href="signup.html" class="cta-btn" style="max-width: 300px;" data-cta="get-started">Go to Bracket Builder</a>
     </div>
   </div>
 </div>
@@ -864,6 +875,22 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuZWxwempham1oZnVjcHRhcWlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzODU2OTQsImV4cCI6MjA5MTk2MTY5NH0.WPfLwEkYZIJ3RTl9jXvvNjbN7jw8kjpqFXWwpqRk1bA';
 
   const LOCK_DATE = new Date('2026-04-21T01:00:00Z'); // Sunday April 20 at 9 PM ET
+
+  // Returns signup.html for new users, bracket.html for returning (signed-up) users
+  function getStartedUrl() {
+    const user = localStorage.getItem('bracketPoolUser');
+    return user
+      ? `bracket.html?player=${encodeURIComponent(user)}`
+      : 'signup.html';
+  }
+
+  // Rewire all "Get Started"-style CTAs once on load to point at the right place
+  function wireGetStartedLinks() {
+    const url = getStartedUrl();
+    document.querySelectorAll('[data-cta="get-started"]').forEach(a => {
+      a.setAttribute('href', url);
+    });
+  }
 
   const UPCOMING_GAMES = [
     { date: '2026-04-18', time: '1:00 PM ET', home: 'Cavaliers', away: 'Raptors', conf: 'east', game: 'Game 1' },
@@ -1040,7 +1067,7 @@
     const rank = myEntry?.rank ?? '—';
 
     container.innerHTML = `
-      <a href="bracket.html" class="my-bracket-content" style="text-decoration:none; color:inherit; cursor:pointer;">
+      <a href="bracket.html?player=${encodeURIComponent(myBracket.player_name)}" class="my-bracket-content" style="text-decoration:none; color:inherit; cursor:pointer;">
         <div class="bracket-icon">🏀</div>
         <div class="bracket-info">
           <div class="bracket-name">${escapeHtml(myBracket.player_name)}</div>
@@ -1092,7 +1119,7 @@
         <div class="empty-leaderboard">
           <div class="empty-state-title">No brackets yet</div>
           <p>Be the first to submit yours.</p>
-          <a href="bracket.html" class="cta-btn" style="max-width: 300px; margin-top: 20px;">Create Bracket</a>
+          <a href="signup.html" class="cta-btn" style="max-width: 300px; margin-top: 20px;" data-cta="get-started">Create Bracket</a>
         </div>
       `;
       return;
@@ -1173,7 +1200,7 @@
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
       if (tab === 'my') {
-        window.location.href = 'bracket.html';
+        window.location.href = getStartedUrl();
         return;
       }
       document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
@@ -1194,6 +1221,8 @@
   }
 
   (async function init() {
+    wireGetStartedLinks();
+
     // Restore tab if navigated from bracket page
     const savedTab = sessionStorage.getItem('activeTab');
     if (savedTab && savedTab !== 'home') {

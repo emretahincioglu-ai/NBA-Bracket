@@ -4,6 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Create a Bracket · 2026 NBA Playoffs</title>
+
+<!-- App icons & Home Screen support -->
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NBA Bracket">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -1185,13 +1195,13 @@
   <div class="finalize-panel" id="finalizePanel">
     <div class="finalize-kicker">Final Step</div>
     <h2 class="finalize-title">Lock It <span class="highlight">In.</span></h2>
-    <p class="finalize-sub">Add your name and submit. No edits after Game 1 tipoff.</p>
+    <p class="finalize-sub">Review your picks and submit. No edits after Game 1 tipoff.</p>
 
     <div class="finalize-field">
       <div class="finalize-label">Identity</div>
       <div class="finalize-field-title">Your Name</div>
-      <div class="finalize-sublabel">How you'll appear on the leaderboard</div>
-      <input type="text" class="finalize-input" id="playerName" placeholder="e.g., Mike M." maxlength="40" />
+      <div class="finalize-sublabel">From your signup — locked in.</div>
+      <input type="text" class="finalize-input" id="playerName" maxlength="40" readonly />
     </div>
 
     <!-- Review summary -->
@@ -1268,7 +1278,6 @@
     ATL: { id: 1610612737, name: 'Hawks', city: 'Atlanta', abbr: 'ATL', color: '#E03A3E' },
     BOS: { id: 1610612738, name: 'Celtics', city: 'Boston', abbr: 'BOS', color: '#007A33' },
     BKN: { id: 1610612751, name: 'Nets', city: 'Brooklyn', abbr: 'BKN', color: '#000000' },
-    CHA: { id: 1610612766, name: 'Hornets', city: 'Charlotte', abbr: 'CHA', color: '#1D1160' },
     CHI: { id: 1610612741, name: 'Bulls', city: 'Chicago', abbr: 'CHI', color: '#CE1141' },
     CLE: { id: 1610612739, name: 'Cavaliers', city: 'Cleveland', abbr: 'CLE', color: '#860038' },
     DAL: { id: 1610612742, name: 'Mavericks', city: 'Dallas', abbr: 'DAL', color: '#00538C' },
@@ -1286,7 +1295,6 @@
     NOP: { id: 1610612740, name: 'Pelicans', city: 'New Orleans', abbr: 'NOP', color: '#0C2340' },
     NYK: { id: 1610612752, name: 'Knicks', city: 'New York', abbr: 'NYK', color: '#006BB6' },
     OKC: { id: 1610612760, name: 'Thunder', city: 'Oklahoma City', abbr: 'OKC', color: '#007AC1' },
-    ORL: { id: 1610612753, name: 'Magic', city: 'Orlando', abbr: 'ORL', color: '#0077C0' },
     PHI: { id: 1610612755, name: '76ers', city: 'Philadelphia', abbr: 'PHI', color: '#006BB6' },
     PHX: { id: 1610612756, name: 'Suns', city: 'Phoenix', abbr: 'PHX', color: '#1D1160' },
     POR: { id: 1610612757, name: 'Trail Blazers', city: 'Portland', abbr: 'POR', color: '#E03A3E' },
@@ -1320,13 +1328,13 @@
   // Play-in still resolving — using most likely 7/8 seeds as placeholders (you can update)
   const BRACKET = {
     east: [
-      { id: 'E1', teams: [team('DET', 1), team('ORL', 8)] },      // 1v8 — Orlando placeholder
+      { id: 'E1', teams: [team('DET', 1), null] },                // 1v8 — 8-seed TBD (play-in)
       { id: 'E4', teams: [team('CLE', 4), team('TOR', 5)] },      // 4v5 — top half
       { id: 'E3', teams: [team('NYK', 3), team('ATL', 6)] },      // 3v6 — bottom half
       { id: 'E2', teams: [team('BOS', 2), team('PHI', 7)] }       // 2v7 — 76ers placeholder
     ],
     west: [
-      { id: 'W1', teams: [team('OKC', 1), team('CHA', 8)] },      // 1v8 — Hornets placeholder
+      { id: 'W1', teams: [team('OKC', 1), null] },                // 1v8 — 8-seed TBD (play-in)
       { id: 'W4', teams: [team('LAL', 4), team('HOU', 5)] },      // 4v5
       { id: 'W3', teams: [team('DEN', 3), team('MIN', 6)] },      // 3v6
       { id: 'W2', teams: [team('SAS', 2), team('POR', 7)] }       // 2v7
@@ -2166,7 +2174,21 @@
 
   // Init - check for existing bracket
   (async function init() {
+    // --- Signup gate: require either a ?player= URL param OR a stored signup ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const playerFromUrl = urlParams.get('player');
+    if (playerFromUrl) {
+      // Coming from signup or "my bracket" card — canonicalize into localStorage
+      localStorage.setItem('bracketPoolUser', playerFromUrl);
+    }
+
     const userName = localStorage.getItem('bracketPoolUser');
+    if (!userName) {
+      // No signup, no stored user → send them to sign up
+      window.location.replace('signup.html');
+      return;
+    }
+
     let existingBracket = null;
     let actualResults = null;
     const now = new Date();
@@ -2232,6 +2254,20 @@
       if (isLocked) {
         window.actualResults = actualResults;
       }
+    }
+
+    // Name is established at signup — always pre-fill and make it read-only
+    // so a player can't submit under a different identity than they signed up with.
+    const nameInput = document.getElementById('playerName');
+    if (nameInput) {
+      nameInput.value = userName;
+      nameInput.readOnly = true;
+      nameInput.setAttribute('aria-readonly', 'true');
+      nameInput.style.opacity = '0.85';
+      nameInput.style.cursor = 'not-allowed';
+      nameInput.title = 'This is the name you signed up with.';
+      // Programmatic .value = doesn't fire "input" — trigger the updater manually
+      if (typeof updateSubmitButton === 'function') updateSubmitButton();
     }
 
     renderRound(1);
