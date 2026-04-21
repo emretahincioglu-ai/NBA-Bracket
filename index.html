@@ -166,6 +166,127 @@
     max-width: 620px;
     line-height: 1.55;
   }
+  /* Compact hero — when there's no CTA or countdown to stage. */
+  .hero.hero-compact {
+    padding: 18px 20px 16px;
+  }
+  .hero.hero-compact::before { display: none; }
+  .hero.hero-compact .hero-kicker {
+    margin-bottom: 6px;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+  }
+  .hero.hero-compact h1.hero-title {
+    font-size: clamp(24px, 4vw, 34px);
+    margin-bottom: 0;
+    line-height: 1;
+  }
+
+  /* TICKER STRIP — shows today + tomorrow games horizontally */
+  .ticker-strip {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .ticker-label {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    background: var(--bg-3);
+    border-right: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .ticker-scroll {
+    flex: 1;
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ticker-scroll::-webkit-scrollbar { display: none; }
+  .ticker-item {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-right: 1px solid var(--line-soft);
+    white-space: nowrap;
+  }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-day {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    font-weight: 700;
+  }
+  .ticker-day.today { color: var(--accent); }
+  .ticker-teams {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--ink);
+    letter-spacing: 0.03em;
+    line-height: 1;
+  }
+  .ticker-team-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .ticker-at {
+    color: var(--ink-dim);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    padding: 0 1px;
+    font-family: 'Bebas Neue', sans-serif;
+  }
+  .ticker-game {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    padding: 3px 6px;
+    background: rgba(196, 178, 152, 0.1);
+    border-radius: 2px;
+    font-weight: 700;
+  }
+  .ticker-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-2);
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+  .ticker-empty {
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.15em;
+  }
+
+  /* On narrow screens, stack the "Upcoming" label above the scrolling items */
+  @media (max-width: 560px) {
+    .ticker-strip { flex-direction: column; }
+    .ticker-label {
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 16px;
+    }
+  }
 
   /* CONTAINER */
   .container {
@@ -1113,16 +1234,29 @@
     background: rgba(196, 178, 152, 0.03);
   }
 
-  /* Series status badge — "CLE leads 1-0" etc. */
+  /* Series status badge — "CLE leads 1-0" + last game result */
   .gc-series-status {
     padding: 8px 18px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--accent);
     background: rgba(196, 178, 152, 0.06);
     border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .gc-series-status > span:first-child {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .gc-last-result {
+    color: var(--ink-dim);
+    font-weight: 400;
+    letter-spacing: 0.08em;
   }
 
   /* Empty state when no picks exist yet */
@@ -1377,18 +1511,17 @@
 <!-- HOME TAB -->
 <div class="tab-view active fade-in" id="tab-home">
 
-  <!-- STATUS BAR -->
-  <div class="status-bar" id="statusBar">
-    <div class="status-round"><strong>Round 1</strong> · Day 1</div>
-    <div class="status-next" id="statusNext">Loading…</div>
+  <!-- TICKER STRIP -->
+  <div class="ticker-strip">
+    <div class="ticker-label">Upcoming</div>
+    <div class="ticker-scroll" id="tickerScroll"></div>
   </div>
 
-  <!-- HERO -->
-  <header class="hero">
+  <!-- HERO (compact) -->
+  <header class="hero hero-compact">
     <div class="hero-inner">
       <div class="hero-kicker">Round 1 · Playoffs 2026</div>
       <h1 class="hero-title">Every pick is <span class="highlight">live.</span></h1>
-      <p class="hero-sub">Brackets are locked. Now we watch.</p>
     </div>
   </header>
 
@@ -1458,8 +1591,8 @@
       <div class="section-title">
         <span class="section-title-icon">🎯</span>
         <div>
-          <div class="section-title-text">Up Next · The Stakes</div>
-          <div class="section-sub">Every matchup, how the pool picked</div>
+          <div class="section-title-text">The Series</div>
+          <div class="section-sub">8 matchups, how the pool picked</div>
         </div>
       </div>
     </div>
@@ -1625,35 +1758,116 @@
     });
   }
 
-  const UPCOMING_GAMES = [
-    // Monday April 20 — Game 2s (tonight)
-    { date: '2026-04-20', time: '7:00 PM ET', home: 'Cavaliers',    away: 'Raptors',      conf: 'east', game: 'Game 2', seriesStatus: 'CLE leads 1-0' },
-    { date: '2026-04-20', time: '10:30 PM ET', home: 'Nuggets',     away: 'Timberwolves', conf: 'west', game: 'Game 2', seriesStatus: 'DEN leads 1-0' },
+  // ====================================================================
+  // SERIES — one canonical entry per playoff series.
+  // Update `status` and `games` (past results) as the playoffs progress.
+  // ====================================================================
+  const SERIES = [
+    // ===== EAST =====
+    {
+      id: 'E1', conf: 'east', seeds: '1 vs 8',
+      home: 'Pistons', away: 'Magic',
+      status: 'ORL leads 1-0',
+      games: [
+        { g: 1, date: '2026-04-19', hs: 101, as: 112, winner: 'Magic' }
+      ]
+    },
+    {
+      id: 'E2', conf: 'east', seeds: '2 vs 7',
+      home: 'Celtics', away: '76ers',
+      status: 'BOS leads 1-0',
+      games: [
+        { g: 1, date: '2026-04-19', hs: 123, as: 91, winner: 'Celtics' }
+      ]
+    },
+    {
+      id: 'E3', conf: 'east', seeds: '3 vs 6',
+      home: 'Knicks', away: 'Hawks',
+      status: 'Series tied 1-1',
+      games: [
+        { g: 1, date: '2026-04-18', hs: 113, as: 102, winner: 'Knicks' },
+        { g: 2, date: '2026-04-20', hs: 106, as: 107, winner: 'Hawks' }
+      ]
+    },
+    {
+      id: 'E4', conf: 'east', seeds: '4 vs 5',
+      home: 'Cavaliers', away: 'Raptors',
+      status: 'CLE leads 1-0',
+      games: [
+        { g: 1, date: '2026-04-18', hs: 126, as: 113, winner: 'Cavaliers' }
+      ]
+    },
+    // ===== WEST =====
+    {
+      id: 'W1', conf: 'west', seeds: '1 vs 8',
+      home: 'Thunder', away: 'Suns',
+      status: 'OKC leads 1-0',
+      games: [
+        { g: 1, date: '2026-04-19', hs: 119, as: 84, winner: 'Thunder' }
+      ]
+    },
+    {
+      id: 'W2', conf: 'west', seeds: '2 vs 7',
+      home: 'Spurs', away: 'Trail Blazers',
+      status: 'SAS leads 1-0',
+      games: [
+        { g: 1, date: '2026-04-19', hs: 111, as: 98, winner: 'Spurs' }
+      ]
+    },
+    {
+      id: 'W3', conf: 'west', seeds: '3 vs 6',
+      home: 'Nuggets', away: 'Timberwolves',
+      status: 'DEN leads 1-0',
+      games: [
+        { g: 1, date: '2026-04-18', hs: 116, as: 105, winner: 'Nuggets' }
+      ]
+    },
+    {
+      id: 'W4', conf: 'west', seeds: '4 vs 5',
+      home: 'Lakers', away: 'Rockets',
+      status: 'LAL leads 1-0',
+      games: [
+        { g: 1, date: '2026-04-18', hs: 107, as: 98, winner: 'Lakers' }
+      ]
+    }
+  ];
+
+  // ====================================================================
+  // SCHEDULE — flat list of individual games for the top strip.
+  // Only future games from "today" forward. Remove rows as games finish.
+  // ====================================================================
+  const SCHEDULE = [
+    // Monday April 20 — Game 2s
+    { date: '2026-04-20', time: '7:00 PM ET',   home: 'Cavaliers', away: 'Raptors',      game: 'G2' },
+    { date: '2026-04-20', time: '10:30 PM ET',  home: 'Nuggets',   away: 'Timberwolves', game: 'G2' },
 
     // Tuesday April 21 — Game 2s
-    { date: '2026-04-21', time: '7:00 PM ET', home: 'Celtics',      away: '76ers',        conf: 'east', game: 'Game 2', seriesStatus: 'BOS leads 1-0' },
-    { date: '2026-04-21', time: '8:00 PM ET', home: 'Spurs',        away: 'Trail Blazers',conf: 'west', game: 'Game 2', seriesStatus: 'SAS leads 1-0' },
-    { date: '2026-04-21', time: '10:30 PM ET', home: 'Lakers',      away: 'Rockets',      conf: 'west', game: 'Game 2', seriesStatus: 'LAL leads 1-0' },
+    { date: '2026-04-21', time: '7:00 PM ET',   home: 'Celtics',   away: '76ers',        game: 'G2' },
+    { date: '2026-04-21', time: '8:00 PM ET',   home: 'Spurs',     away: 'Trail Blazers',game: 'G2' },
+    { date: '2026-04-21', time: '10:30 PM ET',  home: 'Lakers',    away: 'Rockets',      game: 'G2' },
 
     // Wednesday April 22 — Game 2s
-    { date: '2026-04-22', time: '7:00 PM ET', home: 'Pistons',      away: 'Magic',        conf: 'east', game: 'Game 2', seriesStatus: 'ORL leads 1-0' },
-    { date: '2026-04-22', time: '9:30 PM ET', home: 'Thunder',      away: 'Suns',         conf: 'west', game: 'Game 2', seriesStatus: 'OKC leads 1-0' },
+    { date: '2026-04-22', time: '7:00 PM ET',   home: 'Pistons',   away: 'Magic',        game: 'G2' },
+    { date: '2026-04-22', time: '9:30 PM ET',   home: 'Thunder',   away: 'Suns',         game: 'G2' },
 
     // Thursday April 23 — Game 3
-    { date: '2026-04-23', time: '7:00 PM ET', home: 'Hawks',        away: 'Knicks',       conf: 'east', game: 'Game 3', seriesStatus: 'Series tied 1-1' },
+    { date: '2026-04-23', time: '7:00 PM ET',   home: 'Hawks',     away: 'Knicks',       game: 'G3' },
 
     // Friday April 24 — Game 3s
-    { date: '2026-04-24', time: '7:00 PM ET', home: '76ers',        away: 'Celtics',      conf: 'east', game: 'Game 3', seriesStatus: 'BOS leads 1-0' },
-    { date: '2026-04-24', time: '8:00 PM ET', home: 'Raptors',      away: 'Cavaliers',    conf: 'east', game: 'Game 3', seriesStatus: 'CLE leads 1-0' },
-    { date: '2026-04-24', time: '8:00 PM ET', home: 'Rockets',      away: 'Lakers',       conf: 'west', game: 'Game 3', seriesStatus: 'LAL leads 1-0' },
+    { date: '2026-04-24', time: '7:00 PM ET',   home: '76ers',     away: 'Celtics',      game: 'G3' },
+    { date: '2026-04-24', time: '8:00 PM ET',   home: 'Raptors',   away: 'Cavaliers',    game: 'G3' },
+    { date: '2026-04-24', time: '8:00 PM ET',   home: 'Rockets',   away: 'Lakers',       game: 'G3' },
 
-    // Saturday April 25 — Game 3s + one Game 4
-    { date: '2026-04-25', time: '1:00 PM ET', home: 'Magic',        away: 'Pistons',      conf: 'east', game: 'Game 3', seriesStatus: 'ORL leads 1-0' },
-    { date: '2026-04-25', time: '3:30 PM ET', home: 'Suns',         away: 'Thunder',      conf: 'west', game: 'Game 3', seriesStatus: 'OKC leads 1-0' },
-    { date: '2026-04-25', time: '6:00 PM ET', home: 'Hawks',        away: 'Knicks',       conf: 'east', game: 'Game 4', seriesStatus: 'Series tied 1-1' },
-    { date: '2026-04-25', time: '8:30 PM ET', home: 'Timberwolves', away: 'Nuggets',      conf: 'west', game: 'Game 3', seriesStatus: 'DEN leads 1-0' },
-    { date: '2026-04-25', time: '10:30 PM ET', home: 'Trail Blazers', away: 'Spurs',      conf: 'west', game: 'Game 3', seriesStatus: 'SAS leads 1-0' }
+    // Saturday April 25
+    { date: '2026-04-25', time: '1:00 PM ET',   home: 'Magic',     away: 'Pistons',      game: 'G3' },
+    { date: '2026-04-25', time: '3:30 PM ET',   home: 'Suns',      away: 'Thunder',      game: 'G3' },
+    { date: '2026-04-25', time: '6:00 PM ET',   home: 'Hawks',     away: 'Knicks',       game: 'G4' },
+    { date: '2026-04-25', time: '8:30 PM ET',   home: 'Timberwolves', away: 'Nuggets',   game: 'G3' },
+    { date: '2026-04-25', time: '10:30 PM ET',  home: 'Trail Blazers', away: 'Spurs',    game: 'G3' }
   ];
+
+  // Back-compat alias — some older code still references UPCOMING_GAMES
+  const UPCOMING_GAMES = SCHEDULE;
 
   // Countdown is retired — brackets are locked. Leaving placeholder so any
   // other scripts that referenced it don't throw.
@@ -1698,33 +1912,74 @@
     return TEAMS[name] || { abbr: (name || '??').slice(0,3).toUpperCase(), conf: 'east', tc: '#8a8378', tc2: '#8a8378' };
   }
 
-  function renderStatusBar() {
-    // For now: assume no live game logic wired up, show next upcoming.
-    // Later: check results for games in-progress; if any, show with live dot.
-    const next = UPCOMING_GAMES[0];
-    const el = document.getElementById('statusNext');
+  // Ticker strip — shows today + tomorrow games horizontally.
+  function renderTicker() {
+    const el = document.getElementById('tickerScroll');
     if (!el) return;
-    if (!next) {
-      el.innerHTML = 'No scheduled games';
+
+    // "Today" anchors to the earliest scheduled game's date so the strip keeps working
+    // on the day of even if your clock is slightly off. We read SCHEDULE[0]'s date
+    // as "today" and include that + the next calendar day.
+    if (!SCHEDULE.length) {
+      el.innerHTML = '<div class="ticker-empty">No games scheduled</div>';
       return;
     }
-    const homeT = getTeam(next.home);
-    const awayT = getTeam(next.away);
-    el.innerHTML = `Next tip: <strong>${awayT.abbr} @ ${homeT.abbr}</strong> · ${next.time}`;
+    const todayStr = SCHEDULE[0].date;
+    const todayD = new Date(todayStr + 'T12:00:00');
+    const tomorrowD = new Date(todayD); tomorrowD.setDate(todayD.getDate() + 1);
+    const tomorrowStr = tomorrowD.toISOString().slice(0, 10);
+
+    const filtered = SCHEDULE.filter(g => g.date === todayStr || g.date === tomorrowStr);
+    if (!filtered.length) {
+      el.innerHTML = '<div class="ticker-empty">No games today or tomorrow</div>';
+      return;
+    }
+
+    const dayLabel = (dateStr) => {
+      if (dateStr === todayStr) return 'Tonight';
+      if (dateStr === tomorrowStr) return 'Tomorrow';
+      const d = new Date(dateStr + 'T12:00:00');
+      return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    };
+
+    let html = '';
+    filtered.forEach(g => {
+      const homeT = getTeam(g.home);
+      const awayT = getTeam(g.away);
+      const dl = dayLabel(g.date);
+      const dayClass = g.date === todayStr ? 'today' : '';
+      // Compact time — strip seconds / "ET" suffix
+      const timeStr = g.time.replace(' ET', '').replace(':00 ', ' ');
+      html += `
+        <div class="ticker-item">
+          <span class="ticker-day ${dayClass}">${dl}</span>
+          <span class="ticker-time">${timeStr}</span>
+          <span class="ticker-teams">
+            <span class="ticker-team-dot" style="background: ${awayT.tc};"></span>${awayT.abbr}
+            <span class="ticker-at">@</span>
+            <span class="ticker-team-dot" style="background: ${homeT.tc};"></span>${homeT.abbr}
+          </span>
+          <span class="ticker-game">${g.game}</span>
+        </div>
+      `;
+    });
+    el.innerHTML = html;
   }
 
-  function renderGamesNew() {
+  // Keep original name for back-compat in case anything external calls it
+  function renderStatusBar() { renderTicker(); }
+
+  function renderSeriesList() {
     const list = document.getElementById('gamesList');
     if (!list) return;
-    if (!UPCOMING_GAMES.length) {
-      list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--ink-dim); font-size: 13px;">No upcoming games</div>`;
+    if (!SERIES.length) {
+      list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--ink-dim); font-size: 13px;">No series</div>`;
       return;
     }
 
-    // For each game, compute picks distribution from allBrackets (series winner pick for this matchup)
-    // NB: In Round 1 we key by series id (e.g. 'E1','E2','W1'...). Since the schedule doesn't carry series ids
-    // we'll match by home/away team name — look for a bracket pick where winner === home or winner === away in round1.
-    function getDistribution(game) {
+    // For each series, compute picks distribution from allBrackets
+    // (Round 1 picks — match by winner team name against either team in the series)
+    function getDistribution(s) {
       const dist = { home: [], away: [] };
       if (!allBrackets || !allBrackets.length) return dist;
       allBrackets.forEach(b => {
@@ -1732,19 +1987,28 @@
         let chosen = null;
         for (const sid in picks) {
           const w = picks[sid]?.winner;
-          if (w === game.home) { chosen = 'home'; break; }
-          if (w === game.away) { chosen = 'away'; break; }
+          if (w === s.home) { chosen = 'home'; break; }
+          if (w === s.away) { chosen = 'away'; break; }
         }
         if (chosen) dist[chosen].push(b.player_name || '?');
       });
       return dist;
     }
 
+    // Format last-result line for a series
+    function lastResultLine(s) {
+      if (!s.games || !s.games.length) return null;
+      const last = s.games[s.games.length - 1];
+      const homeT = getTeam(s.home);
+      const awayT = getTeam(s.away);
+      return `G${last.g}: ${awayT.abbr} ${last.as} · ${homeT.abbr} ${last.hs}`;
+    }
+
     let html = '';
-    UPCOMING_GAMES.forEach((g, idx) => {
-      const homeT = getTeam(g.home);
-      const awayT = getTeam(g.away);
-      const dist = getDistribution(g);
+    SERIES.forEach((s, idx) => {
+      const homeT = getTeam(s.home);
+      const awayT = getTeam(s.away);
+      const dist = getDistribution(s);
       const total = dist.home.length + dist.away.length;
       const homeCount = dist.home.length;
       const awayCount = dist.away.length;
@@ -1756,13 +2020,13 @@
       const awayClass = winner === 'away' ? 'winner' : winner === 'home' ? 'loser' : 'tie';
 
       const myBracket = currentUser && allBrackets.find(b => b.player_name?.toLowerCase() === currentUser.toLowerCase());
-      const myPick = myBracket ? (dist.home.includes(myBracket.player_name) ? g.home : dist.away.includes(myBracket.player_name) ? g.away : null) : null;
+      const myPick = myBracket ? (dist.home.includes(myBracket.player_name) ? s.home : dist.away.includes(myBracket.player_name) ? s.away : null) : null;
 
-      const id = 'game-' + idx;
-      const tag = g.conf === 'east' ? 'East' : 'West';
+      const id = 'series-' + idx;
+      const tag = s.conf === 'east' ? 'East' : 'West';
+      const lastRes = lastResultLine(s);
 
-      // Build pill lists
-      const pillsFor = (names, isWinnerSide) => {
+      const pillsFor = (names) => {
         if (!names.length) return `<div style="color: var(--ink-dim); font-size: 11px; font-family: 'JetBrains Mono', monospace;">No picks</div>`;
         return names.map(n => {
           const isYou = currentUser && n.toLowerCase() === currentUser.toLowerCase();
@@ -1770,7 +2034,6 @@
         }).join('');
       };
 
-      // Pool split — either real data, or a placeholder state when no one's picked yet
       const metaLine = total > 0
         ? (count) => `<strong>${count} of ${total}</strong> picked`
         : () => `<span style="color: var(--ink-dim);">No picks yet</span>`;
@@ -1785,7 +2048,7 @@
             <div class="bar-fill ${awayClass}" style="flex-basis: ${awayPct}%; --tc: ${awayT.tc}; --tc2: ${awayT.tc2};"><span class="bar-count">${awayPct}%</span></div>
             <div class="bar-fill ${homeClass} right" style="flex-basis: ${homePct}%; --tc: ${homeT.tc}; --tc2: ${homeT.tc2};"><span class="bar-count">${homePct}%</span></div>
           </div>
-          ${myPick ? `<div class="bar-you-text">You picked <strong>${escapeHtml(myPick)}</strong>. ${(myPick === g.home ? homeCount : awayCount) - 1} other${((myPick === g.home ? homeCount : awayCount) - 1) === 1 ? '' : 's'} agree.</div>` : ''}
+          ${myPick ? `<div class="bar-you-text">You picked <strong>${escapeHtml(myPick)}</strong>. ${(myPick === s.home ? homeCount : awayCount) - 1} other${((myPick === s.home ? homeCount : awayCount) - 1) === 1 ? '' : 's'} agree.</div>` : ''}
           <div style="margin-top: 14px;">
             <span class="show-names" data-names="names-${id}">Show all names →</span>
           </div>
@@ -1793,11 +2056,11 @@
             <div class="names-header" style="--tc: ${awayT.tc};">
               <span class="dot"></span>${awayT.abbr} · ${awayCount}
             </div>
-            <div class="names-pills">${pillsFor(dist.away, awayClass === 'winner')}</div>
+            <div class="names-pills">${pillsFor(dist.away)}</div>
             <div class="names-header" style="--tc: ${homeT.tc};">
               <span class="dot"></span>${homeT.abbr} · ${homeCount}
             </div>
-            <div class="names-pills">${pillsFor(dist.home, homeClass === 'winner')}</div>
+            <div class="names-pills">${pillsFor(dist.home)}</div>
           </div>
         `
         : `
@@ -1813,16 +2076,18 @@
       html += `
         <div class="gamecard">
           <div class="gc-head">
-            <span class="gc-tag-gc ${g.conf}">${tag}</span>
-            <span class="gc-round">Round 1 · ${escapeHtml(g.game)}</span>
-            <div class="gc-time">${g.time.split(' ')[0]}<span class="pm">${g.time.split(' ').slice(1).join(' ')}</span></div>
+            <span class="gc-tag-gc ${s.conf}">${tag}</span>
+            <span class="gc-round">Round 1 · ${escapeHtml(s.seeds)}</span>
           </div>
-          ${g.seriesStatus ? `<div class="gc-series-status">${escapeHtml(g.seriesStatus)}</div>` : ''}
+          <div class="gc-series-status">
+            <span>${escapeHtml(s.status)}</span>
+            ${lastRes ? `<span class="gc-last-result">${escapeHtml(lastRes)}</span>` : ''}
+          </div>
 
           <div class="gc-body">
             <div class="gc-team away">
               <div>
-                <div class="gc-team-name">${escapeHtml(g.away)}</div>
+                <div class="gc-team-name">${escapeHtml(s.away)}</div>
                 <div class="gc-team-meta">${metaLine(awayCount)}</div>
               </div>
               <div class="gc-logo" style="--tc: ${awayT.tc}; --tc2: ${awayT.tc2};">${awayT.abbr}</div>
@@ -1831,7 +2096,7 @@
             <div class="gc-team home">
               <div class="gc-logo" style="--tc: ${homeT.tc}; --tc2: ${homeT.tc2};">${homeT.abbr}</div>
               <div>
-                <div class="gc-team-name">${escapeHtml(g.home)}</div>
+                <div class="gc-team-name">${escapeHtml(s.home)}</div>
                 <div class="gc-team-meta">${metaLine(homeCount)}</div>
               </div>
             </div>
@@ -1845,7 +2110,6 @@
     });
     list.innerHTML = html;
 
-    // Only names are behind a toggle now; pool split always visible.
     list.querySelectorAll('.show-names').forEach(link => {
       link.addEventListener('click', () => {
         const target = document.getElementById(link.dataset.names);
@@ -1854,6 +2118,9 @@
       });
     });
   }
+
+  // Back-compat alias
+  function renderGamesNew() { renderSeriesList(); }
 
   let currentUser = localStorage.getItem('bracketPoolUser') || null;
   let allBrackets = [];
