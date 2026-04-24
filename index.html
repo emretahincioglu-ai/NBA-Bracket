@@ -7973,30 +7973,58 @@
     (boxGames || []).forEach(g => candidates.push(g));
     futureFetches.forEach(arr => (arr || []).forEach(g => candidates.push(g)));
 
+    // Diagnostic counters
+    const diag = {
+      boxGamesCount: (boxGames || []).length,
+      futureCounts: futureFetches.map(a => (a || []).length),
+      totalCandidates: candidates.length,
+      droppedDupes: 0,
+      droppedNotInPool: 0,
+      droppedFinal: 0,
+      kept: 0,
+      seriesFound: new Set(),
+      abbrsInCandidates: new Set()
+    };
+
     const seenIds = new Set();
     const rows = [];
     candidates.forEach(g => {
       if (!g) return;
-      // Dedupe: prefer numeric id, else synthetic
-      const key = String(g.id || `${g.date}-${g.visitor_team?.abbreviation}@${g.home_team?.abbreviation}`);
-      if (seenIds.has(key)) return;
-      seenIds.add(key);
       const home = g.home_team?.abbreviation;
       const away = g.visitor_team?.abbreviation;
+      if (home) diag.abbrsInCandidates.add(home);
+      if (away) diag.abbrsInCandidates.add(away);
+      const key = String(g.id || `${g.date}-${away}@${home}`);
+      if (seenIds.has(key)) { diag.droppedDupes++; return; }
+      seenIds.add(key);
       const series = findSeriesByAbbrs(home, away);
-      if (!series) return; // not in our pool
-      // Skip finished games entirely — sportsbook shows only betable games
-      if (isFinalStatus(g.status)) return;
+      if (!series) { diag.droppedNotInPool++; return; }
+      diag.seriesFound.add(series.id);
+      if (isFinalStatus(g.status)) { diag.droppedFinal++; return; }
+      diag.kept++;
       rows.push({ series, apiGame: g, mode: 'api', pastGame: null });
     });
 
-    console.log('[sb] collected', rows.length, 'betable games');
+    console.log('[sb]', diag);
 
     if (!rows.length) {
+      // Show diagnostic info in the empty state so we can debug without DevTools
+      const abbrsStr = [...diag.abbrsInCandidates].sort().join(', ') || 'none';
       container.innerHTML = `
         <div class="sb-empty-state">
           <div class="sb-empty-title">No games right now</div>
           <div class="sb-empty-sub">Check back closer to tipoff</div>
+          <div style="margin-top:18px;padding:12px;background:rgba(20,20,20,0.6);border:1px solid var(--line-soft);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);text-align:left;line-height:1.6;">
+            <div style="color:var(--accent);margin-bottom:6px;">DIAGNOSTIC</div>
+            boxGames: ${diag.boxGamesCount}<br>
+            future fetches: [${diag.futureCounts.join(', ')}]<br>
+            total candidates: ${diag.totalCandidates}<br>
+            dropped dupes: ${diag.droppedDupes}<br>
+            dropped (not in pool): ${diag.droppedNotInPool}<br>
+            dropped (final): ${diag.droppedFinal}<br>
+            kept: ${diag.kept}<br>
+            abbrs seen: ${abbrsStr}
+          </div>
         </div>
       `;
       return;
