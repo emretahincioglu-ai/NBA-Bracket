@@ -2753,6 +2753,84 @@
   let boxStats = {};
   const boxStatsFinalCached = new Set();
 
+  // Session cache: keeps scorecard data warm across tab navigations so returning
+  // to Home paints instantly instead of showing "No games found" then re-fetching.
+  // Cleared when the browser closes.
+  const SCORECARD_CACHE_KEY = 'scorecardCache_v1';
+  const SCORECARD_CACHE_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes — anything older we distrust
+
+  function restoreScorecardCache() {
+    try {
+      const raw = sessionStorage.getItem(SCORECARD_CACHE_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.savedAt) return false;
+      const age = Date.now() - parsed.savedAt;
+      if (age > SCORECARD_CACHE_MAX_AGE_MS) return false;
+      // Trust the cached data — paint from it, poll will refresh soon.
+      if (Array.isArray(parsed.boxGames)) boxGames = parsed.boxGames;
+      if (parsed.boxStats && typeof parsed.boxStats === 'object') boxStats = parsed.boxStats;
+      if (Array.isArray(parsed.finalCached)) {
+        parsed.finalCached.forEach(id => boxStatsFinalCached.add(id));
+      }
+      console.log(`[scorecard] restored from cache (${Math.round(age/1000)}s old, ${boxGames.length} games)`);
+      return true;
+    } catch (e) {
+      console.warn('[scorecard] cache restore failed', e);
+      return false;
+    }
+  }
+
+  function saveScorecardCache() {
+    try {
+      sessionStorage.setItem(SCORECARD_CACHE_KEY, JSON.stringify({
+        savedAt: Date.now(),
+        boxGames,
+        boxStats,
+        finalCached: Array.from(boxStatsFinalCached)
+      }));
+    } catch (e) {
+      // sessionStorage can fail if quota exceeded — not fatal, just skip caching this time
+      console.warn('[scorecard] cache save failed', e);
+    }
+  }
+
+  // Session cache for bracket/leaderboard data — same pattern as scorecard.
+  // Keeps allBrackets + results warm across page navigation so the leaderboard
+  // and standing card paint instantly on return.
+  const BRACKETS_CACHE_KEY = 'bracketsCache_v1';
+  const BRACKETS_CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 min — stale brackets/results are slightly worse than stale scores
+
+  function restoreBracketsCache() {
+    try {
+      const raw = sessionStorage.getItem(BRACKETS_CACHE_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.savedAt) return false;
+      const age = Date.now() - parsed.savedAt;
+      if (age > BRACKETS_CACHE_MAX_AGE_MS) return false;
+      if (Array.isArray(parsed.brackets)) allBrackets = parsed.brackets;
+      if (parsed.results && typeof parsed.results === 'object') results = parsed.results;
+      console.log(`[brackets] restored from cache (${Math.round(age/1000)}s old, ${allBrackets.length} brackets)`);
+      return true;
+    } catch (e) {
+      console.warn('[brackets] cache restore failed', e);
+      return false;
+    }
+  }
+
+  function saveBracketsCache() {
+    try {
+      sessionStorage.setItem(BRACKETS_CACHE_KEY, JSON.stringify({
+        savedAt: Date.now(),
+        brackets: allBrackets,
+        results
+      }));
+    } catch (e) {
+      console.warn('[brackets] cache save failed', e);
+    }
+  }
+
   async function fetchStatsForGame(gameId) {
     try {
       const url = `${BDL_BASE}/stats?game_ids[]=${gameId}&per_page=100`;
@@ -2916,6 +2994,9 @@
       try { renderSeriesList(); } catch (e) { console.error('[render] renderSeriesList failed:', e); }
       try { renderTicker(); } catch (e) { console.error('[render] renderTicker failed:', e); }
     }
+    // Always persist after a successful sync (even if nothing mutated, the
+    // cache may have been empty on this page load and we want to fill it).
+    saveScorecardCache();
     return { mutated, anyLive };
   }
 
@@ -4125,32 +4206,64 @@
       if (btn) btn.click();
     }
 
-    // Fetch with defensive fallbacks so one broken network call doesn't
-    // leave the whole page in a half-rendered state.
-    try {
-      allBrackets = await fetchBrackets();
-    } catch (e) {
-      console.error('[init] fetchBrackets failed:', e);
-      allBrackets = [];
-    }
-    try {
-      results = await fetchResults();
-    } catch (e) {
-      console.error('[init] fetchResults failed:', e);
-      results = {};
-    }
+    // Warm the scorecard from sessionStorage cache so the first paint has
+    // data, even before the API poll returns. This is what makes bouncing
+    // between Home and My Bracket feel instant.
+    restoreScorecardCache();
+    // Same pattern for brackets + results — leaderboard and standings paint
+    // instantly instead of flashing the "loading" empty state.
+    const bracketsRestored = restoreBracketsCache();
 
-    // Each render is independently guarded — a crash in one shouldn't blank the rest.
+    // If we have cached brackets, render IMMEDIATELY so the page paints
+    // before the Supabase fetch. Otherwise wait for the fetch to finish
+    // before the first render (no point showing an empty page).
     const safeRender = (fn, name) => {
       try { fn(); }
       catch (e) { console.error(`[init] ${name} failed:`, e); }
     };
-    safeRender(renderStatusBar, 'renderStatusBar');
-    safeRender(renderBoxScores, 'renderBoxScores');
-    safeRender(renderStanding, 'renderStanding');
-    safeRender(renderBracketHealth, 'renderBracketHealth');
-    safeRender(renderChamps, 'renderChamps');
-    safeRender(renderGamesNew, 'renderGamesNew');
+    const renderAll = () => {
+      safeRender(renderStatusBar, 'renderStatusBar');
+      safeRender(renderBoxScores, 'renderBoxScores');
+      safeRender(renderStanding, 'renderStanding');
+      safeRender(renderBracketHealth, 'renderBracketHealth');
+      safeRender(renderChamps, 'renderChamps');
+      safeRender(renderGamesNew, 'renderGamesNew');
+    };
+
+    if (bracketsRestored) {
+      // Paint with cached data immediately — feels instant.
+      renderAll();
+    }
+
+    // Fetch fresh data (runs in background if we already rendered from cache,
+    // or blocks first render if we didn't have a cache).
+    try {
+      const fresh = await fetchBrackets();
+      allBrackets = fresh;
+    } catch (e) {
+      console.error('[init] fetchBrackets failed:', e);
+      if (!bracketsRestored) allBrackets = [];
+    }
+    try {
+      const fresh = await fetchResults();
+      results = fresh;
+    } catch (e) {
+      console.error('[init] fetchResults failed:', e);
+      if (!bracketsRestored) results = {};
+    }
+    // Persist the fresh data for next return
+    saveBracketsCache();
+
+    // Re-render with fresh data. If we didn't render from cache above, this
+    // is the first paint; if we did, this overlays fresh data onto what's
+    // already showing.
+    renderAll();
+
+    // If leaderboard tab is currently visible, re-render it too
+    const lbTab = document.getElementById('tab-leaderboard');
+    if (lbTab && lbTab.classList.contains('active')) {
+      try { renderLeaderboard(); } catch (e) {}
+    }
 
     // Start polling BallDontLie for live scores + finished games
     try { startLivePolling(); }
