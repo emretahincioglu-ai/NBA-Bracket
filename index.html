@@ -7949,219 +7949,121 @@
     const container = document.getElementById('sbGamesList');
     if (!container) return;
 
-    const [yesterday, today] = relevantDates();
-    container.innerHTML = `<div class="sb-loading">Loading games… <span id="sbLoadStage">starting</span></div>`;
-    const setStage = (s) => {
-      const el = document.getElementById('sbLoadStage');
-      if (el) el.textContent = s;
-      console.log('[sb] stage:', s);
-    };
-
-    // Collect games from two sources:
-    // 1. boxGames (today + recent, populated by syncLiveScores)
-    // 2. direct /games fetches for next 3 days (so upcoming games appear
-    //    even if user hasn't navigated calendar)
-
-    // Run sync if boxGames is empty
-    if (!boxGames || !boxGames.length) {
-      setStage('syncing live scores');
-      try {
-        await Promise.race([
-          syncLiveScores(),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('sync timeout')), 8000))
-        ]);
-      } catch (e) { console.warn('[sb] sync failed', e); }
-    }
-
-    // Build 3-day window of future dates to pull for upcoming games
-    setStage('fetching upcoming games');
-    const futureDates = [today, shiftDateStr(today, 1), shiftDateStr(today, 2), shiftDateStr(today, 3)];
-    const withTimeout = (p, ms) => Promise.race([
-      p,
-      new Promise((resolve) => setTimeout(() => resolve([]), ms))
-    ]);
-    const futureFetches = await Promise.all(
-      futureDates.map(d => withTimeout(fetchGamesForDate(d).catch(() => []), 8000))
-    );
-    setStage('processing');
-
+    // Dead-simple render: one card per pool matchup, using only the
+    // static SERIES array. No async, no API, no filtering. If this still
+    // doesn't render, the problem is environmental (not in this code).
     try {
-    // Collect all candidate games, dedupe by id, map to series we track.
-    const candidates = [];
-    (boxGames || []).forEach(g => candidates.push(g));
-    futureFetches.forEach(arr => (arr || []).forEach(g => candidates.push(g)));
-
-    // Diagnostic counters
-    const diag = {
-      boxGamesCount: (boxGames || []).length,
-      futureCounts: futureFetches.map(a => (a || []).length),
-      totalCandidates: candidates.length,
-      droppedDupes: 0,
-      droppedNotInPool: 0,
-      droppedFinal: 0,
-      kept: 0,
-      seriesFound: new Set(),
-      abbrsInCandidates: new Set()
-    };
-
-    const seenIds = new Set();
-    const rows = [];
-    candidates.forEach(g => {
-      if (!g) return;
-      const home = g.home_team?.abbreviation;
-      const away = g.visitor_team?.abbreviation;
-      if (home) diag.abbrsInCandidates.add(home);
-      if (away) diag.abbrsInCandidates.add(away);
-      const key = String(g.id || `${g.date}-${away}@${home}`);
-      if (seenIds.has(key)) { diag.droppedDupes++; return; }
-      seenIds.add(key);
-      const series = findSeriesByAbbrs(home, away);
-      if (!series) { diag.droppedNotInPool++; return; }
-      diag.seriesFound.add(series.id);
-      if (isFinalStatus(g.status)) { diag.droppedFinal++; return; }
-      diag.kept++;
-      rows.push({ series, apiGame: g, mode: 'api', pastGame: null });
-    });
-
-    console.log('[sb]', diag);
-
-    if (!rows.length) {
-      // Show diagnostic info in the empty state so we can debug without DevTools
-      const abbrsStr = [...diag.abbrsInCandidates].sort().join(', ') || 'none';
-      container.innerHTML = `
-        <div class="sb-empty-state">
-          <div class="sb-empty-title">No games right now</div>
-          <div class="sb-empty-sub">Check back closer to tipoff</div>
-          <div style="margin-top:18px;padding:12px;background:rgba(20,20,20,0.6);border:1px solid var(--line-soft);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);text-align:left;line-height:1.6;">
-            <div style="color:var(--accent);margin-bottom:6px;">DIAGNOSTIC</div>
-            boxGames: ${diag.boxGamesCount}<br>
-            future fetches: [${diag.futureCounts.join(', ')}]<br>
-            total candidates: ${diag.totalCandidates}<br>
-            dropped dupes: ${diag.droppedDupes}<br>
-            dropped (not in pool): ${diag.droppedNotInPool}<br>
-            dropped (final): ${diag.droppedFinal}<br>
-            kept: ${diag.kept}<br>
-            abbrs seen: ${abbrsStr}
+      const cardsHtml = SERIES.map(s => {
+        const homeT = getTeam(s.home);
+        const awayT = getTeam(s.away);
+        return `
+          <div class="sb-game-card" data-series-id="${s.id}">
+            <button class="sb-game-card-head" type="button" onclick="window.__sbToggleSeriesCard('${s.id}')">
+              <div class="sb-game-card-teams">
+                <span class="sb-game-card-team">${escapeHtml(awayT.abbr)} ${escapeHtml(awayT.name.split(' ').pop())}</span>
+                <span class="sb-game-card-at">@</span>
+                <span class="sb-game-card-team">${escapeHtml(homeT.abbr)} ${escapeHtml(homeT.name.split(' ').pop())}</span>
+              </div>
+              <div class="sb-game-card-right">
+                <span class="sb-game-card-tipoff">${escapeHtml(s.status || '')}</span>
+                <span class="sb-game-card-chev">›</span>
+              </div>
+            </button>
+            <div class="sb-game-card-body" id="sb-body-${s.id}"></div>
           </div>
-        </div>
-      `;
-      return;
-    }
+        `;
+      }).join('');
 
-    // Sort: live first, then by date/time ascending
-    rows.sort((a, b) => {
-      const aLive = isLiveStatus(a.apiGame.status) ? 0 : 1;
-      const bLive = isLiveStatus(b.apiGame.status) ? 0 : 1;
-      if (aLive !== bLive) return aLive - bLive;
-      const aKey = (a.apiGame.date || '') + '|' + (a.apiGame.datetime || a.apiGame.status || '');
-      const bKey = (b.apiGame.date || '') + '|' + (b.apiGame.datetime || b.apiGame.status || '');
-      return aKey.localeCompare(bKey);
-    });
-
-    // Group by viewing-date
-    const byDate = {};
-    rows.forEach(r => {
-      const d = r.apiGame?.date || today;
-      (byDate[d] = byDate[d] || []).push(r);
-    });
-    const sortedDates = Object.keys(byDate).sort();
-
-    const sectionsHtml = sortedDates.map(d => {
-      const groupRows = byDate[d];
-      let label;
-      if (d === today) label = 'Tonight';
-      else if (d === shiftDateStr(today, 1)) label = 'Tomorrow';
-      else label = dayLabel(d);
-      const cardsHtml = groupRows.map(r => renderSbGameCard(r, today)).join('');
-      return `
+      container.innerHTML = `
         <div class="sb-game-group">
-          <div class="sb-game-group-label">${label}</div>
+          <div class="sb-game-group-label">Active Series</div>
           ${cardsHtml}
         </div>
       `;
-    }).join('');
-
-    setStage('rendering ' + rows.length + ' games');
-    console.log('[sb] rendering', rows.length, 'rows. sectionsHtml length:', sectionsHtml.length);
-
-    // Defensive: if somehow sectionsHtml is empty, show the diagnostic instead
-    if (!sectionsHtml.trim()) {
-      container.innerHTML = `
-        <div class="sb-empty-state">
-          <div class="sb-empty-title">Render produced empty HTML</div>
-          <div class="sb-empty-sub">rows=${rows.length}, sortedDates=${JSON.stringify(sortedDates)}</div>
-        </div>
-      `;
-      return;
-    }
-
-    // Wrap in a container with a visible marker so we know the innerHTML assignment happened
-    container.innerHTML = `<div style="padding:10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.4);border-radius:6px;margin-bottom:12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#22c55e;">RENDERED ${rows.length} GAMES</div>` + sectionsHtml;
-
-    // Stash the rows so the bet-slip can find them (instead of relying on
-    // currentRowsRef which only holds Home's selection).
-    sbRows = rows;
-
-    // Wire expand handlers for each card
-    container.querySelectorAll('.sb-game-card-head').forEach(headEl => {
-      headEl.addEventListener('click', async (e) => {
-        const card = headEl.closest('.sb-game-card');
-        const gameId = card.dataset.gameId;
-        const wasExpanded = card.classList.contains('expanded');
-        card.classList.toggle('expanded');
-        sbGameExpanded[gameId] = !wasExpanded;
-        if (wasExpanded) return;
-        const rowData = sbRows.find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
-        if (!rowData) return;
-        const g = rowData.apiGame;
-        const bodyEl = card.querySelector('.sb-game-card-body');
-        if (!bodyEl) return;
-        if (boxPlayerProps[g.id]) {
-          bodyEl.innerHTML = renderPropsTable(g, rowData.series, boxPlayerProps[g.id], boxStats[g.id]);
-          const cachedIds = Object.keys(boxPlayerProps[g.id]);
-          const needNames = cachedIds.some(id => !playerNameCache[id]);
-          const needAvgs = cachedIds.some(id => !seasonAvgCache[id]);
-          if (needNames || needAvgs) {
-            await Promise.all([
-              needNames ? fetchPlayerNames(cachedIds) : Promise.resolve(),
-              needAvgs  ? fetchSeasonAvgs(cachedIds)  : Promise.resolve()
-            ]);
-            bodyEl.innerHTML = renderPropsTable(g, rowData.series, boxPlayerProps[g.id], boxStats[g.id]);
-          }
-          return;
-        }
-        bodyEl.innerHTML = `<div class="sb-loading">Loading props…</div>`;
-        const realGameId = g.real_game_id || (typeof g.id === 'number' ? g.id : null);
-        if (!realGameId) {
-          bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">Props unavailable for this game</div></div>`;
-          return;
-        }
-        const props = await fetchPlayerPropsForGame(realGameId);
-        if (!props) {
-          bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">DraftKings hasn't posted props yet</div></div>`;
-          return;
-        }
-        boxPlayerProps[g.id] = props;
-        const ids = Object.keys(props);
-        await Promise.all([fetchPlayerNames(ids), fetchSeasonAvgs(ids)]);
-        bodyEl.innerHTML = renderPropsTable(g, rowData.series, boxPlayerProps[g.id], boxStats[g.id]);
-      });
-    });
+      console.log('[sb] rendered', SERIES.length, 'series cards');
     } catch (err) {
-      console.error('[sb] processing error:', err);
+      console.error('[sb] fatal render error', err);
       container.innerHTML = `
         <div class="sb-empty-state">
-          <div class="sb-empty-title">Something broke</div>
-          <div class="sb-empty-sub">Error during games processing</div>
-          <div style="margin-top:18px;padding:12px;background:rgba(20,20,20,0.6);border:1px solid var(--line-soft);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--danger);text-align:left;line-height:1.6;word-break:break-word;">
-            <div style="color:var(--accent);margin-bottom:6px;">ERROR</div>
-            ${escapeHtml(err && err.message || String(err))}<br><br>
-            ${escapeHtml((err && err.stack || '').split('\n').slice(0, 4).join(' | '))}
-          </div>
+          <div class="sb-empty-title">Render failed</div>
+          <div class="sb-empty-sub" style="color:var(--danger);font-family:monospace;">${escapeHtml(err?.message || String(err))}</div>
         </div>
       `;
     }
   }
+
+  // Toggle a series card — on expand, look up next game for this series
+  // and load props if a tipoff is available.
+  window.__sbToggleSeriesCard = async function(seriesId) {
+    const card = document.querySelector(`.sb-game-card[data-series-id="${seriesId}"]`);
+    if (!card) return;
+    const wasExpanded = card.classList.contains('expanded');
+    card.classList.toggle('expanded');
+    if (wasExpanded) return;
+
+    const bodyEl = card.querySelector('.sb-game-card-body');
+    if (!bodyEl) return;
+
+    const series = SERIES.find(s => s.id === seriesId);
+    if (!series) return;
+
+    // Find the next upcoming game for this series from boxGames / future fetches
+    const [yesterday, today] = relevantDates();
+    const homeAbbr = getTeam(series.home).abbr;
+    const awayAbbr = getTeam(series.away).abbr;
+
+    bodyEl.innerHTML = `<div class="sb-loading">Loading props…</div>`;
+
+    // Pull games for next 3 days and find one matching this series
+    let matchingGame = null;
+    const datesToCheck = [today, shiftDateStr(today, 1), shiftDateStr(today, 2), shiftDateStr(today, 3)];
+    for (const d of datesToCheck) {
+      const games = await fetchGamesForDate(d).catch(() => []);
+      const match = (games || []).find(g => {
+        const h = g.home_team?.abbreviation;
+        const a = g.visitor_team?.abbreviation;
+        return (h === homeAbbr && a === awayAbbr) || (h === awayAbbr && a === homeAbbr);
+      });
+      if (match && !isFinalStatus(match.status)) {
+        matchingGame = match;
+        break;
+      }
+    }
+
+    if (!matchingGame) {
+      bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">No upcoming game for this series yet</div></div>`;
+      return;
+    }
+
+    if (isLiveStatus(matchingGame.status) || isFinalStatus(matchingGame.status)) {
+      bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">Bets locked — game is live or complete</div></div>`;
+      return;
+    }
+
+    // Stash this mapping for the bet slip
+    sbRows = sbRows.filter(r => r.series.id !== seriesId);
+    sbRows.push({ series, apiGame: matchingGame, mode: 'api', pastGame: null });
+
+    // Fetch props
+    const realGameId = typeof matchingGame.id === 'number' ? matchingGame.id : null;
+    if (!realGameId) {
+      bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">Props unavailable (no game ID)</div></div>`;
+      return;
+    }
+
+    if (!boxPlayerProps[matchingGame.id]) {
+      const props = await fetchPlayerPropsForGame(realGameId);
+      if (!props) {
+        bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">DraftKings hasn't posted props yet</div></div>`;
+        return;
+      }
+      boxPlayerProps[matchingGame.id] = props;
+      const ids = Object.keys(props);
+      await Promise.all([fetchPlayerNames(ids), fetchSeasonAvgs(ids)]);
+    }
+
+    bodyEl.innerHTML = renderPropsTable(matchingGame, series, boxPlayerProps[matchingGame.id], boxStats[matchingGame.id]);
+  };
 
   // Sportsbook-owned rows (independent of Home's calendar state)
   let sbRows = [];
