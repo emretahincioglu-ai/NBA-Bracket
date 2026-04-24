@@ -2691,6 +2691,210 @@
     opacity: 1;
   }
 
+  /* ================== GROUPED PROPS (v2, FanDuel-style) ================== */
+  .props-v2-wrap {
+    padding: 6px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pv2-section {
+    background: rgba(20, 20, 20, 0.6);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .pv2-section-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    background: linear-gradient(180deg, rgba(196,178,152,0.06), rgba(196,178,152,0.02));
+    border: none;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+    font-family: inherit;
+    color: inherit;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .pv2-section-head:hover {
+    background: rgba(196, 178, 152, 0.1);
+  }
+  .pv2-section.collapsed .pv2-section-head {
+    border-bottom: none;
+  }
+  .pv2-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.03em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .pv2-section-head-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pv2-vendor {
+    display: inline-block;
+    padding: 3px 6px;
+    background: rgba(94, 155, 62, 0.15);
+    color: #6ec04f;
+    border: 1px solid rgba(110, 192, 79, 0.4);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+  .pv2-chev {
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1;
+    width: 16px;
+    text-align: center;
+  }
+  .pv2-section-body {
+    display: block;
+    max-height: 9999px;
+    transition: max-height 0.25s ease-out;
+  }
+  .pv2-section.collapsed .pv2-section-body {
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  /* Individual player row inside a section */
+  .pv2-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 14px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line-soft);
+    font-family: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .pv2-row:last-child { border-bottom: none; }
+  .pv2-row:hover { background: rgba(196, 178, 152, 0.05); }
+  .pv2-row:active { background: rgba(196, 178, 152, 0.1); }
+  .pv2-row-left {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .pv2-name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+  .pv2-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .pv2-team {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.06em;
+  }
+  .pv2-avg-row {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+  .pv2-avg-label {
+    color: var(--ink-dim);
+    font-weight: 500;
+  }
+  .pv2-avg-val {
+    color: var(--accent-bright);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .pv2-avg-placeholder {
+    color: var(--ink-dim);
+    opacity: 0.4;
+  }
+
+  /* Right side — line value and O/U odds */
+  .pv2-row-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .pv2-line {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    min-width: 48px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .pv2-odds-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 68px;
+  }
+  .pv2-odd-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 3px 7px;
+    background: rgba(196, 178, 152, 0.04);
+    border: 1px solid rgba(196, 178, 152, 0.2);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .pv2-ou {
+    color: var(--ink-dim);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .pv2-ou-val {
+    color: var(--accent-bright);
+    font-weight: 700;
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 560px) {
+    .props-v2-wrap { padding: 6px 8px 12px; }
+    .pv2-section-head { padding: 10px 12px; }
+    .pv2-section-title { font-size: 18px; }
+    .pv2-row { padding: 11px 12px; gap: 10px; }
+    .pv2-name { font-size: 14px; }
+    .pv2-line { font-size: 22px; min-width: 42px; }
+    .pv2-odds-pair { min-width: 60px; }
+    .pv2-odd-row { padding: 2px 6px; font-size: 10px; }
+  }
+  @media (max-width: 380px) {
+    .pv2-line { font-size: 20px; min-width: 36px; }
+    .pv2-odds-pair { min-width: 54px; }
+  }
+
   /* Desktop enhancement */
   @media (min-width: 680px) {
     .pd-panel { margin: 12px 16px 18px; }
@@ -4098,6 +4302,76 @@
     }
   }
 
+  // Season averages cache — in-memory, keyed by playerId.
+  // Value: {pts, reb, ast, fg3m, stl, blk, isPlayoffs, fetchedAt}
+  // Playoffs data is volatile so TTL is short (10 min). Regular season caches 1hr.
+  const seasonAvgCache = {};
+
+  // Batch-fetch season averages for a list of player IDs.
+  // Tries playoffs first; for players with thin playoff data (<3 games),
+  // falls back to regular season averages. Updates cache in place.
+  async function fetchSeasonAvgs(ids, season = 2025) {
+    if (!ids || !ids.length) return;
+    const now = Date.now();
+    const TTL = 10 * 60 * 1000;
+    const missing = ids.filter(id => {
+      const c = seasonAvgCache[id];
+      return !c || (now - c.fetchedAt) > TTL;
+    });
+    if (!missing.length) return;
+
+    const headers = { 'Authorization': BALLDONTLIE_API_KEY };
+    // Endpoint accepts player_ids[] repeated; batch in chunks of 90
+    const fetchChunk = async (chunk, seasonType) => {
+      const qs = chunk.map(id => `player_ids[]=${encodeURIComponent(id)}`).join('&');
+      const url = `${BDL_BASE}/season_averages/general?category=general&season_type=${seasonType}&type=base&season=${season}&${qs}&per_page=100`;
+      try {
+        const resp = await fetch(url, { headers });
+        if (!resp.ok) return [];
+        const json = await resp.json();
+        return json.data || [];
+      } catch (e) { return []; }
+    };
+
+    try {
+      for (let i = 0; i < missing.length; i += 90) {
+        const chunk = missing.slice(i, i + 90);
+        // Fire playoffs + regular in parallel so fallback is instant if needed
+        const [playoffRows, regRows] = await Promise.all([
+          fetchChunk(chunk, 'playoffs'),
+          fetchChunk(chunk, 'regular')
+        ]);
+        const playoffById = {};
+        playoffRows.forEach(r => { if (r?.player_id != null) playoffById[r.player_id] = r; });
+        const regById = {};
+        regRows.forEach(r => { if (r?.player_id != null) regById[r.player_id] = r; });
+
+        chunk.forEach(id => {
+          const pRow = playoffById[id];
+          const rRow = regById[id];
+          // Prefer playoff row if it has ≥3 games played; else regular
+          const gp = pRow?.stats?.games_played || pRow?.stats?.gp || 0;
+          const useRow = (pRow && gp >= 3) ? pRow : (rRow || pRow || null);
+          const isPlayoffs = useRow === pRow && gp >= 3;
+          const s = useRow?.stats || {};
+          seasonAvgCache[id] = {
+            pts: s.pts ?? null,
+            reb: s.reb ?? null,
+            ast: s.ast ?? null,
+            fg3m: s.fg3m ?? null,
+            stl: s.stl ?? null,
+            blk: s.blk ?? null,
+            isPlayoffs,
+            fetchedAt: now
+          };
+        });
+      }
+      console.log(`[seasonAvgs] cached ${missing.length} players`);
+    } catch (err) {
+      console.warn('[seasonAvgs] batch fetch failed', err);
+    }
+  }
+
   // Per-player cache for detail-panel data. Key: playerId → {seasonAvg, lastGames, fetchedAt}
   // Kept in-memory only (resets on page reload) — playoffs data changes frequently.
   const playerDetailCache = {};
@@ -4927,11 +5201,15 @@
           // Already cached; re-render body so props show
           body.innerHTML = renderScorecardBody(rowData, today);
           body.classList.add('open');
-          // Ensure we have names for these players too
+          // Ensure we have names + season avgs for these players too
           const cachedIds = Object.keys(boxPlayerProps[g.id]);
-          const needFetch = cachedIds.some(id => !playerNameCache[id]);
-          if (needFetch) {
-            await fetchPlayerNames(cachedIds);
+          const needNames = cachedIds.some(id => !playerNameCache[id]);
+          const needAvgs = cachedIds.some(id => !seasonAvgCache[id]);
+          if (needNames || needAvgs) {
+            await Promise.all([
+              needNames ? fetchPlayerNames(cachedIds) : Promise.resolve(),
+              needAvgs  ? fetchSeasonAvgs(cachedIds)  : Promise.resolve()
+            ]);
             body.innerHTML = renderScorecardBody(rowData, today);
           }
           return;
@@ -4942,9 +5220,9 @@
           // Paint what we have immediately so user sees something
           body.innerHTML = renderScorecardBody(rowData, today);
           body.classList.add('open');
-          // Then fetch names in the background and re-render once they arrive
+          // Background: fetch names + season averages in parallel, then re-render
           const ids = Object.keys(props);
-          await fetchPlayerNames(ids);
+          await Promise.all([fetchPlayerNames(ids), fetchSeasonAvgs(ids)]);
           body.innerHTML = renderScorecardBody(rowData, today);
         }
       });
@@ -5556,29 +5834,35 @@
     { key: 'steals',   label: 'STL' }
   ];
 
+  // Props sections configuration — what stat to show and how to label it
+  const PROPS_SECTIONS = [
+    { key: 'points',   propKey: 'points',   statKey: 'pts',  title: 'Points',      avgLabel: 'PPG' },
+    { key: 'rebounds', propKey: 'rebounds', statKey: 'reb',  title: 'Rebounds',    avgLabel: 'RPG' },
+    { key: 'assists',  propKey: 'assists',  statKey: 'ast',  title: 'Assists',     avgLabel: 'APG' },
+    { key: 'threes',   propKey: 'threes',   statKey: 'fg3m', title: '3-Pointers',  avgLabel: '3PG' },
+    { key: 'blocks',   propKey: 'blocks',   statKey: 'blk',  title: 'Blocks',      avgLabel: 'BPG' },
+    { key: 'steals',   propKey: 'steals',   statKey: 'stl',  title: 'Steals',      avgLabel: 'SPG' }
+  ];
+
+  // Track which sections are collapsed per game. Default: all expanded.
+  // Keyed by `${gameId}:${sectionKey}` → true if collapsed
+  const collapsedSections = {};
+
   function renderPropsTable(game, series, propsByPlayer, statRows) {
     if (!propsByPlayer || !Object.keys(propsByPlayer).length) {
-      // No props yet — either not loaded or simply not available
       return `
-        <div class="props-section">
-          <div class="props-section-head">
-            <span class="odds-vendor">DK</span>
-            <span class="odds-section-title">Player Props</span>
-          </div>
+        <div class="props-v2-wrap">
           <div class="box-empty">Player props will appear as DraftKings posts them.</div>
         </div>
       `;
     }
 
-    // Build a player lookup: prefer the global playerNameCache (populated
-    // from /players endpoint when props load), else fall back to statRows
-    // (only populated for live/final games). Name format: "L. James".
+    // Build player meta (name + team)
     const formatName = (first, last) => {
       const initial = (first || '').charAt(0);
       return initial ? `${initial}. ${last || ''}`.trim() : (last || '');
     };
     const playerMeta = {};
-    // First pass: from the persistent cache (works for upcoming games)
     Object.keys(propsByPlayer).forEach(pid => {
       const cached = playerNameCache[pid];
       if (cached) {
@@ -5588,7 +5872,6 @@
         };
       }
     });
-    // Second pass: stat rows override with more recent team info for live/final
     (statRows || []).forEach(r => {
       if (r.player) {
         playerMeta[r.player.id] = {
@@ -5598,83 +5881,107 @@
       }
     });
 
-    // Build rows — sort: players with points prop first (stars), then rest
-    const playerIds = Object.keys(propsByPlayer).sort((aId, bId) => {
-      const aHasPts = propsByPlayer[aId]?.points?.line != null ? 1 : 0;
-      const bHasPts = propsByPlayer[bId]?.points?.line != null ? 1 : 0;
-      if (aHasPts !== bHasPts) return bHasPts - aHasPts;
-      // Then by points line descending (higher projected scorers up top)
-      const aLine = propsByPlayer[aId]?.points?.line || 0;
-      const bLine = propsByPlayer[bId]?.points?.line || 0;
-      return bLine - aLine;
-    });
+    // Build sections — one per stat category.
+    // Skip a section entirely if no player has a line for that stat.
+    const sectionsHtml = PROPS_SECTIONS.map(section => {
+      const playersInSection = Object.keys(propsByPlayer).filter(pid => {
+        const p = propsByPlayer[pid]?.[section.propKey];
+        return p && p.line != null;
+      });
+      if (!playersInSection.length) return '';
 
-    const header = `
-      <div class="props-row props-row-head">
-        <div class="props-cell props-cell-player">Player</div>
-        ${PROP_COLS.map(c => `<div class="props-cell">${c.label}</div>`).join('')}
-      </div>
-    `;
+      // Sort by line value descending — stars first
+      playersInSection.sort((a, b) => {
+        const aLine = propsByPlayer[a][section.propKey].line;
+        const bLine = propsByPlayer[b][section.propKey].line;
+        return bLine - aLine;
+      });
 
-    const rows = playerIds.map(pid => {
-      const meta = playerMeta[pid];
-      const name = meta?.name || `Player ${pid}`;
-      const teamAbbr = meta?.teamAbbr || '';
-      const playerProps = propsByPlayer[pid];
-      const cells = PROP_COLS.map(c => {
-        const p = playerProps[c.key];
-        const val = p?.line != null ? p.line : null;
-        return `<div class="props-cell ${val != null ? 'has-val' : 'no-val'}">${val != null ? val : '—'}</div>`;
+      const collapseKey = `${game.id}:${section.key}`;
+      const isCollapsed = !!collapsedSections[collapseKey];
+
+      const rows = playersInSection.map(pid => {
+        const meta = playerMeta[pid];
+        const name = meta?.name || `Player ${pid}`;
+        const teamAbbr = meta?.teamAbbr || '';
+        const p = propsByPlayer[pid][section.propKey];
+        const line = p.line;
+        const overDec = americanToDecimal(p.overOdds);
+        const underDec = americanToDecimal(p.underOdds);
+        const avgs = seasonAvgCache[pid];
+        const avgVal = avgs?.[section.statKey];
+        const avgStr = (typeof avgVal === 'number') ? avgVal.toFixed(1) : null;
+
+        return `
+          <button class="pv2-row" data-player-id="${pid}" data-game-id="${game.id}" type="button" onclick="window.__openPlayer('${pid}','${game.id}')">
+            <div class="pv2-row-left">
+              <div class="pv2-name-row">
+                <span class="pv2-name">${escapeHtml(name)}</span>
+                ${teamAbbr ? `<span class="pv2-team">· ${escapeHtml(teamAbbr)}</span>` : ''}
+              </div>
+              <div class="pv2-avg-row">
+                ${avgStr != null
+                  ? `<span class="pv2-avg-label">${section.avgLabel}:</span> <span class="pv2-avg-val">${avgStr}</span>`
+                  : `<span class="pv2-avg-placeholder">—</span>`}
+              </div>
+            </div>
+            <div class="pv2-row-right">
+              <div class="pv2-line">${line}</div>
+              <div class="pv2-odds-pair">
+                <div class="pv2-odd-row"><span class="pv2-ou">O</span><span class="pv2-ou-val">${overDec != null ? overDec.toFixed(2) : '—'}</span></div>
+                <div class="pv2-odd-row"><span class="pv2-ou">U</span><span class="pv2-ou-val">${underDec != null ? underDec.toFixed(2) : '—'}</span></div>
+              </div>
+            </div>
+          </button>
+        `;
       }).join('');
-      return `
-        <button class="props-row props-row-tappable" data-player-id="${pid}" data-game-id="${game.id}" type="button" onclick="window.__openPlayer('${pid}','${game.id}')">
-          <div class="props-cell props-cell-player">
-            <span class="props-chev">›</span>
-            <span class="props-name">${escapeHtml(name)}</span>
-            ${teamAbbr ? `<span class="props-team">${escapeHtml(teamAbbr)}</span>` : ''}
-          </div>
-          ${cells}
-        </button>
-      `;
-    }).join('');
 
-    const mainTable = `
-      <div class="props-section">
-        <div class="props-section-head">
-          <span class="odds-vendor">DK</span>
-          <span class="odds-section-title">Player Props · O/U</span>
-        </div>
-        <div class="props-scroll">
-          <div class="props-table">
-            ${header}
+      return `
+        <div class="pv2-section ${isCollapsed ? 'collapsed' : ''}" data-collapse-key="${collapseKey}">
+          <button class="pv2-section-head" type="button" onclick="window.__togglePropsSection('${collapseKey}','${game.id}')">
+            <span class="pv2-section-title">${section.title}</span>
+            <span class="pv2-section-head-right">
+              <span class="pv2-vendor">DK</span>
+              <span class="pv2-chev">${isCollapsed ? '▾' : '▴'}</span>
+            </span>
+          </button>
+          <div class="pv2-section-body">
             ${rows}
           </div>
         </div>
+      `;
+    }).join('');
+
+    if (!sectionsHtml.trim()) {
+      return `
+        <div class="props-v2-wrap">
+          <div class="box-empty">No props available for this game yet.</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="props-v2-wrap">
+        ${sectionsHtml}
       </div>
     `;
-
-    // Extra sections: only render if at least one player has data in them.
-    const first3Html = renderPropsSubTable(
-      propsByPlayer, playerMeta, playerIds,
-      [
-        { key: 'points_first3min',  label: 'PTS' },
-        { key: 'assists_first3min', label: 'AST' }
-      ],
-      'First 3 Minutes'
-    );
-    const quarterHtml = renderPropsSubTable(
-      propsByPlayer, playerMeta, playerIds,
-      [
-        { key: 'points_1q',   label: 'Q1 PTS' },
-        { key: 'rebounds_1q', label: 'Q1 REB' },
-        { key: 'assists_1q',  label: 'Q1 AST' }
-      ],
-      'Quarter 1 Props'
-    );
-    const milestonesHtml = renderMilestoneSection(propsByPlayer, playerMeta, playerIds);
-
-    return `${mainTable}${first3Html}${quarterHtml}${milestonesHtml}`;
   }
+
+  // Toggle a section open/closed. Exposed on window so inline onclick can call.
+  window.__togglePropsSection = function(collapseKey, gameId) {
+    collapsedSections[collapseKey] = !collapsedSections[collapseKey];
+    // Re-render just the body of this scorecard
+    const rowData = [...(currentRowsRef?.liveRowsToShow || []),
+                     ...(currentRowsRef?.finalRowsToShow || []),
+                     ...(currentRowsRef?.scheduledRowsToShow || [])]
+      .find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
+    if (!rowData) return;
+    const body = document.getElementById(`sc-body-${rowData.series.id}`);
+    if (!body) return;
+    const [yesterday, today] = relevantDates();
+    body.innerHTML = renderScorecardBody(rowData, today);
+  };
+
 
   // Render a secondary props sub-table. Returns empty string if no player
   // has any value for the given columns (avoids a "dead" section).
@@ -5996,24 +6303,9 @@
   // Full-screen centered modal (body-level). Opened on player-row tap.
   let modalState = { playerId: null, gameId: null, rowData: null, activeStat: 'pts' };
 
-  // On-screen debug banner so iPhone users can see logs without DevTools.
-  // Remove or comment out after debugging is done.
-  function debugBanner(msg) {
-    let banner = document.getElementById('__debug_banner');
-    if (!banner) {
-      banner = document.createElement('div');
-      banner.id = '__debug_banner';
-      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:rgba(0,0,0,0.92);color:#0f0;font:11px monospace;padding:4px 8px;max-height:30vh;overflow-y:auto;border-bottom:1px solid #0f0;';
-      banner.addEventListener('click', () => banner.style.display = 'none');
-      document.body.appendChild(banner);
-    }
-    const line = document.createElement('div');
-    line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
-    banner.appendChild(line);
-    // keep only last 30
-    while (banner.children.length > 30) banner.removeChild(banner.firstChild);
-    banner.scrollTop = banner.scrollHeight;
-  }
+  // On-screen debug banner — disabled. Left as a no-op so existing call sites
+  // still work without rewriting them.
+  function debugBanner(msg) { /* no-op */ }
 
   // Direct bridge from the inline onclick="" on player rows.
   // Bypasses event delegation entirely — eliminates a whole class of bugs.
