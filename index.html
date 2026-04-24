@@ -3753,6 +3753,8 @@
     if (!el) return;
 
     const [yesterday, today, tomorrow] = relevantDates();
+    const viewingDate = currentScorecardDate();
+    const viewingToday = viewingDate === today;
 
     // Helper: does this API game belong to one of our tracked series?
     const gameToRow = (g) => {
@@ -3762,14 +3764,25 @@
       return s ? { series: s, mode: 'api', apiGame: g, pastGame: null } : null;
     };
 
-    // Priority 1: ANY live game, regardless of API date (timezone edge cases).
-    const liveRowsRaw = boxGames.filter(g => isLiveStatus(g.status)).map(gameToRow).filter(Boolean);
-
-    // Priority 2: games finalized today.
-    const todayFinalsRaw = boxGames.filter(g => isFinalStatus(g.status) && g.date === today).map(gameToRow).filter(Boolean);
-
-    // Priority 3 (fallback): games finalized yesterday.
-    const yestFinalsRaw = boxGames.filter(g => isFinalStatus(g.status) && g.date === yesterday).map(gameToRow).filter(Boolean);
+    // When viewing today: keep legacy 3-bucket logic (live / today-finals / yesterday-finals fallback).
+    // When viewing any other day: just show whatever games exist on that date.
+    let liveRowsRaw, todayFinalsRaw, yestFinalsRaw, scheduledRaw;
+    if (viewingToday) {
+      // Priority 1: ANY live game, regardless of API date (timezone edge cases).
+      liveRowsRaw = boxGames.filter(g => isLiveStatus(g.status)).map(gameToRow).filter(Boolean);
+      // Priority 2: games finalized today.
+      todayFinalsRaw = boxGames.filter(g => isFinalStatus(g.status) && g.date === today).map(gameToRow).filter(Boolean);
+      // Priority 3 (fallback): games finalized yesterday.
+      yestFinalsRaw = boxGames.filter(g => isFinalStatus(g.status) && g.date === yesterday).map(gameToRow).filter(Boolean);
+      scheduledRaw = [];
+    } else {
+      // Show everything on the viewing date: live + final + scheduled.
+      const gamesForDay = boxGames.filter(g => g.date === viewingDate);
+      liveRowsRaw = gamesForDay.filter(g => isLiveStatus(g.status)).map(gameToRow).filter(Boolean);
+      todayFinalsRaw = gamesForDay.filter(g => isFinalStatus(g.status)).map(gameToRow).filter(Boolean);
+      scheduledRaw = gamesForDay.filter(g => !isLiveStatus(g.status) && !isFinalStatus(g.status)).map(gameToRow).filter(Boolean);
+      yestFinalsRaw = [];
+    }
 
     // Dedupe by series id — we never want the same series appearing twice.
     const seen = new Set();
@@ -3781,47 +3794,29 @@
 
     const liveRows = dedupe(liveRowsRaw);
     const todayFinalRows = dedupe(todayFinalsRaw);
+    const scheduledRows = dedupe(scheduledRaw);
     const yestFinalRows = dedupe(yestFinalsRaw);
 
-    let rows = [...liveRows, ...todayFinalRows];
+    let rows = [...liveRows, ...todayFinalRows, ...scheduledRows];
     let usingFallback = false;
-    if (!rows.length) {
+    if (!rows.length && viewingToday) {
       rows = yestFinalRows;
       usingFallback = rows.length > 0;
     }
 
     // Log what we got so you can see it in DevTools
     console.log('[scorecard]', {
+      viewingDate,
       totalBoxGames: boxGames.length,
       liveRows: liveRows.length,
       todayFinals: todayFinalRows.length,
+      scheduled: scheduledRows.length,
       yestFinals: yestFinalRows.length,
       showing: rows.length,
       today, yesterday, tomorrow
     });
 
-    if (!rows.length) {
-      const explainer = boxGames.length === 0
-        ? 'No data loaded yet. Check the browser console for API errors.'
-        : `API returned ${boxGames.length} game(s) but none matched the pool's series.`;
-      el.innerHTML = `
-        <div class="scorecard scorecard-empty">
-          <div class="scorecard-empty-title">No games found</div>
-          <div class="scorecard-empty-sub">${explainer}</div>
-        </div>
-      `;
-      return;
-    }
-
-    // Use the already-deduped rows from above. When a fallback was triggered,
-    // rows contains yestFinalRows; otherwise it's liveRows + todayFinalRows.
-    const liveRowsToShow = usingFallback ? [] : liveRows;
-    const finalRowsToShow = usingFallback ? yestFinalRows : todayFinalRows;
-
-    const liveHtml = liveRowsToShow.map(r => renderHeroScorecard(r, today)).join('');
-    const finalHtml = finalRowsToShow.map(r => renderCompactScorecard(r, today)).join('');
-
-    const viewingDate = currentScorecardDate();
+    // Day-nav bar — built once, used on both empty and populated states
     const dayNavHtml = `
       <div class="day-nav">
         <button class="day-nav-btn" data-nav="prev" type="button" aria-label="Previous day">◂</button>
@@ -3829,6 +3824,46 @@
         <button class="day-nav-btn" data-nav="next" type="button" aria-label="Next day">▸</button>
       </div>
     `;
+
+    // Shared wiring function for the day-nav arrows
+    const wireDayNav = () => {
+      el.querySelectorAll('.day-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const delta = btn.dataset.nav === 'next' ? 1 : -1;
+          const cur = currentScorecardDate();
+          selectedDate = shiftDateStr(cur, delta);
+          boxOdds = {};
+          boxPlayerProps = {};
+          renderScorecard();
+          syncCurrent();
+        });
+      });
+    };
+
+    if (!rows.length) {
+      const explainer = boxGames.length === 0
+        ? `No playoff games on ${dayLabel(viewingDate).toLowerCase()}.`
+        : `API returned ${boxGames.length} game(s) but none matched the pool's series on this date.`;
+      el.innerHTML = `
+        ${dayNavHtml}
+        <div class="scorecard scorecard-empty">
+          <div class="scorecard-empty-title">No games found</div>
+          <div class="scorecard-empty-sub">${explainer}</div>
+        </div>
+      `;
+      wireDayNav();
+      return;
+    }
+
+    // Use the already-deduped rows from above. When a fallback was triggered,
+    // rows contains yestFinalRows; otherwise it's liveRows + todayFinalRows + scheduledRows.
+    const liveRowsToShow = usingFallback ? [] : liveRows;
+    const finalRowsToShow = usingFallback
+      ? yestFinalRows
+      : [...todayFinalRows, ...scheduledRows];
+
+    const liveHtml = liveRowsToShow.map(r => renderHeroScorecard(r, today)).join('');
+    const finalHtml = finalRowsToShow.map(r => renderCompactScorecard(r, today)).join('');
 
     // Section title reflects the current day context
     let titleHtml;
@@ -3840,7 +3875,7 @@
       titleHtml = dayLabel(viewingDate);
     }
     const subHtml = liveRowsToShow.length
-      ? `${liveRowsToShow.length} in progress${finalRowsToShow.length ? ' · ' + finalRowsToShow.length + ' final' : ''}`
+      ? `${liveRowsToShow.length} in progress${finalRowsToShow.length ? ' · ' + finalRowsToShow.length + ' more' : ''}`
       : (finalRowsToShow.length ? `${finalRowsToShow.length} ${finalRowsToShow.length === 1 ? 'game' : 'games'}` : '');
 
     el.innerHTML = `
@@ -3855,20 +3890,8 @@
       </div>
     `;
 
-    // Wire day-nav arrows
-    el.querySelectorAll('.day-nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const delta = btn.dataset.nav === 'next' ? 1 : -1;
-        const cur = currentScorecardDate();
-        selectedDate = shiftDateStr(cur, delta);
-        // Clear per-day caches so we refetch for the new date
-        // (boxStats for completed games are still safe — keyed by game id)
-        boxOdds = {};
-        boxPlayerProps = {};
-        renderScorecard(); // paint instantly with empty state while fetch runs
-        syncCurrent(); // kick off fresh fetch
-      });
-    });
+    // Wire day-nav arrows (shared function handles both empty and populated states)
+    wireDayNav();
 
     // Wire expand handlers
     el.querySelectorAll('.sc-row-header').forEach(header => {
