@@ -4628,7 +4628,7 @@
     'Jazz':         { abbr: 'UTA', conf: 'west', tc: '#F9A01B', tc2: '#00471B' }
   };
   function getTeam(name) {
-    return TEAMS[name] || { abbr: (name || '??').slice(0,3).toUpperCase(), conf: 'east', tc: '#8a8378', tc2: '#8a8378' };
+    return TEAMS[name] || { abbr: (name || '??').slice(0,3).toUpperCase(), name: name || 'Unknown', conf: 'east', tc: '#8a8378', tc2: '#8a8378' };
   }
 
   // ====================================================================
@@ -7956,13 +7956,15 @@
       const cardsHtml = SERIES.map(s => {
         const homeT = getTeam(s.home);
         const awayT = getTeam(s.away);
+        const homeLabel = (homeT.name || s.home || '').split(' ').pop() || s.home;
+        const awayLabel = (awayT.name || s.away || '').split(' ').pop() || s.away;
         return `
           <div class="sb-game-card" data-series-id="${s.id}">
             <button class="sb-game-card-head" type="button" onclick="window.__sbToggleSeriesCard('${s.id}')">
               <div class="sb-game-card-teams">
-                <span class="sb-game-card-team">${escapeHtml(awayT.abbr)} ${escapeHtml(awayT.name.split(' ').pop())}</span>
+                <span class="sb-game-card-team">${escapeHtml(awayT.abbr)} ${escapeHtml(awayLabel)}</span>
                 <span class="sb-game-card-at">@</span>
-                <span class="sb-game-card-team">${escapeHtml(homeT.abbr)} ${escapeHtml(homeT.name.split(' ').pop())}</span>
+                <span class="sb-game-card-team">${escapeHtml(homeT.abbr)} ${escapeHtml(homeLabel)}</span>
               </div>
               <div class="sb-game-card-right">
                 <span class="sb-game-card-tipoff">${escapeHtml(s.status || '')}</span>
