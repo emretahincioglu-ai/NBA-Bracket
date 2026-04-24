@@ -1842,7 +1842,7 @@
     font-variant-numeric: tabular-nums;
   }
   .sched-cell-ml-only .sched-cell-odds {
-    font-size: 17px;
+    font-size: 14px;
   }
 
   @media (max-width: 560px) {
@@ -4292,16 +4292,22 @@
   async function syncLiveScores() {
     const [yesterday, today] = relevantDates();
     console.log('[sync] starting — today=', today, 'yesterday=', yesterday);
+    if (typeof debugBanner === 'function') debugBanner(`sync today=${today}`);
 
     // Primary fetch: live box scores (today only, includes player stats inline)
     const { games: liveBoxData, err: liveErr } = await fetchLiveBoxScores();
     console.log('[sync] liveBoxScores response — count=', liveBoxData?.length || 0, 'err=', liveErr);
+    if (typeof debugBanner === 'function') debugBanner(`liveBox count=${liveBoxData?.length || 0} err=${liveErr || 'none'}`);
 
     // Fetch today's games via /games to get real game_ids (live box scores
     // endpoint doesn't include them, but we need them to match odds).
     const todayGames = await fetchGamesForDate(today);
     console.log('[sync] /games for', today, '— count=', todayGames?.length || 0,
       todayGames ? todayGames.map(g => `${g.visitor_team?.abbreviation}@${g.home_team?.abbreviation} (postseason=${g.postseason}, status=${g.status})`) : []);
+    if (typeof debugBanner === 'function') {
+      debugBanner(`/games ${today} count=${todayGames?.length || 0}`);
+      (todayGames || []).forEach(g => debugBanner(`  ${g.visitor_team?.abbreviation}@${g.home_team?.abbreviation} status=${g.status} post=${g.postseason}`));
+    }
     const todayGamesByAbbrs = {}; // "AWAY@HOME" → game object
     if (Array.isArray(todayGames)) {
       todayGames.forEach(g => {
@@ -5647,7 +5653,7 @@
         return `<div class="props-cell ${val != null ? 'has-val' : 'no-val'}">${val != null ? val : '—'}</div>`;
       }).join('');
       return `
-        <button class="props-row props-row-tappable" data-player-id="${pid}" data-game-id="${game.id}" type="button">
+        <button class="props-row props-row-tappable" data-player-id="${pid}" data-game-id="${game.id}" type="button" onclick="window.__openPlayer('${pid}','${game.id}')">
           <div class="props-cell props-cell-player">
             <span class="props-chev">›</span>
             <span class="props-name">${escapeHtml(name)}</span>
@@ -6015,6 +6021,41 @@
   // ================== PLAYER MODAL ==================
   // Full-screen centered modal (body-level). Opened on player-row tap.
   let modalState = { playerId: null, gameId: null, rowData: null, activeStat: 'pts' };
+
+  // On-screen debug banner so iPhone users can see logs without DevTools.
+  // Remove or comment out after debugging is done.
+  function debugBanner(msg) {
+    let banner = document.getElementById('__debug_banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = '__debug_banner';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:rgba(0,0,0,0.92);color:#0f0;font:11px monospace;padding:4px 8px;max-height:30vh;overflow-y:auto;border-bottom:1px solid #0f0;';
+      banner.addEventListener('click', () => banner.style.display = 'none');
+      document.body.appendChild(banner);
+    }
+    const line = document.createElement('div');
+    line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+    banner.appendChild(line);
+    // keep only last 30
+    while (banner.children.length > 30) banner.removeChild(banner.firstChild);
+    banner.scrollTop = banner.scrollHeight;
+  }
+
+  // Direct bridge from the inline onclick="" on player rows.
+  // Bypasses event delegation entirely — eliminates a whole class of bugs.
+  window.__openPlayer = function(playerId, gameId) {
+    debugBanner(`tap player=${playerId} game=${gameId}`);
+    console.log('[__openPlayer]', { playerId, gameId });
+    const refs = currentRowsRef;
+    const rowData = [...refs.liveRowsToShow, ...refs.finalRowsToShow, ...refs.scheduledRowsToShow]
+      .find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
+    if (!rowData) {
+      debugBanner(`ERROR: no rowData for gameId=${gameId}. available ids: ${[...refs.liveRowsToShow, ...refs.finalRowsToShow, ...refs.scheduledRowsToShow].map(r => r.apiGame?.id).join(',')}`);
+      return;
+    }
+    debugBanner(`opening modal for ${playerId}`);
+    openPlayerModal(playerId, gameId, rowData);
+  };
 
   function ensureModalMount() {
     let mount = document.getElementById('pd-modal-root');
