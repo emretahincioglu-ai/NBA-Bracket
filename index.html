@@ -3121,9 +3121,12 @@
   function groupStatsByTeam(rows) {
     const groups = {};
     (rows || []).forEach(r => {
-      // Skip if didn't play
-      const minStr = r.min || '';
-      if (!minStr || minStr === '0' || minStr === '00' || minStr === '0:00' || minStr === '00:00') return;
+      // Skip genuine DNPs — must have zero stats across the board.
+      // If the player touched the floor (any min, pts, reb, ast), keep them.
+      const minStr = String(r.min || '');
+      const minVal = parseMin(minStr);
+      const hasAnyStat = minVal > 0 || (r.pts || 0) > 0 || (r.reb || 0) > 0 || (r.ast || 0) > 0 || (r.stl || 0) > 0 || (r.blk || 0) > 0;
+      if (!hasAnyStat) return;
       const abbr = r.team?.abbreviation || '??';
       if (!groups[abbr]) groups[abbr] = [];
       groups[abbr].push(r);
@@ -3453,6 +3456,17 @@
     const byTeam = statRows ? groupStatsByTeam(statRows) : {};
     const awayList = byTeam[awayT.abbr] || [];
     const homeList = byTeam[homeT.abbr] || [];
+
+    // Diagnostic: log what we have so you can see it in DevTools
+    console.log(`[body ${s.id}]`, {
+      mode: rowData.mode,
+      gameId: rowData.apiGame?.id,
+      statsLoading,
+      rawStatRows: statRows ? statRows.length : null,
+      awayAbbr: awayT.abbr, awayPlayers: awayList.length,
+      homeAbbr: homeT.abbr, homePlayers: homeList.length,
+      allTeamAbbrs: statRows ? [...new Set(statRows.map(r => r.team?.abbreviation))] : []
+    });
 
     return `
       ${quarters && quarters.some(q => q.h != null || q.a != null) ? `
