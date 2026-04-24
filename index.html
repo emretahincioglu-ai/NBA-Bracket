@@ -7950,14 +7950,29 @@
     if (!container) return;
 
     // Use currentRowsRef (populated by renderScorecard) as the primary source.
-    // If empty (user hasn't opened home yet), fall back to a direct fetch.
     const [yesterday, today] = relevantDates();
     let liveRows = currentRowsRef?.liveRowsToShow || [];
     let scheduledRows = currentRowsRef?.scheduledRowsToShow || [];
 
-    // Also include tomorrow + day after if not already represented, so users
-    // can bet on games up to 2 days out.
-    // This happens naturally via the existing sync for now. Future: explicit fetch.
+    // If empty, trigger the sync directly so Sportsbook tab doesn't require
+    // visiting Home first. Show loading state while we wait.
+    if (!liveRows.length && !scheduledRows.length) {
+      container.innerHTML = `<div class="sb-loading">Loading games…</div>`;
+      try {
+        console.log('[sb] no rows in ref, triggering sync');
+        await syncLiveScores();
+        // syncLiveScores populates boxGames but doesn't directly update currentRowsRef.
+        // currentRowsRef is set inside renderScorecard. Trigger that too.
+        if (typeof renderScorecard === 'function') {
+          renderScorecard();
+        }
+        liveRows = currentRowsRef?.liveRowsToShow || [];
+        scheduledRows = currentRowsRef?.scheduledRowsToShow || [];
+        console.log('[sb] after sync: live=', liveRows.length, 'scheduled=', scheduledRows.length);
+      } catch (err) {
+        console.warn('[sb] sync failed', err);
+      }
+    }
 
     if (!liveRows.length && !scheduledRows.length) {
       container.innerHTML = `
