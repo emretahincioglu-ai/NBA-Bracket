@@ -115,6 +115,192 @@
     color: var(--ink);
     border-bottom-color: var(--accent);
   }
+  /* Overflow "more" button — kebab dots */
+  .tab-nav-more {
+    flex: 0 0 auto;
+    width: 44px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 16px 0 14px;
+    transition: background 0.15s;
+  }
+  .tab-nav-more:hover { background: rgba(196, 178, 152, 0.04); }
+  .tab-more-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--ink-dim);
+    transition: background 0.15s;
+  }
+  .tab-nav-more:hover .tab-more-dot { background: var(--ink-2); }
+  .tab-nav-more[aria-expanded="true"] .tab-more-dot { background: var(--accent); }
+
+  /* Overflow menu popover */
+  .tab-more-menu {
+    position: absolute;
+    top: 100px;
+    right: 8px;
+    min-width: 140px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    overflow: hidden;
+    animation: tabMoreIn 0.15s ease-out;
+  }
+  @keyframes tabMoreIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .tab-more-item {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .tab-more-item:hover { background: rgba(196, 178, 152, 0.08); }
+  .tab-more-item.active { background: rgba(196, 178, 152, 0.12); color: var(--accent-bright); }
+
+  /* On narrow screens, tighten tab labels */
+  @media (max-width: 480px) {
+    .tab-nav-btn { padding: 16px 4px 14px; font-size: 10.5px; letter-spacing: 0.08em; }
+    .tab-nav-more { width: 36px; }
+  }
+
+  /* ================== SPORTSBOOK TAB ================== */
+  .sb-balance-strip {
+    margin: 0 auto 16px;
+    padding: 18px 20px;
+    background: linear-gradient(135deg, rgba(196, 178, 152, 0.08) 0%, rgba(196, 178, 152, 0.02) 100%);
+    border: 1px solid rgba(196, 178, 152, 0.22);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .sb-balance-strip::before {
+    content: '';
+    position: absolute;
+    top: -30%; left: -10%;
+    width: 140px; height: 140px;
+    background: radial-gradient(circle, rgba(212, 197, 160, 0.18), transparent 70%);
+    pointer-events: none;
+  }
+  .sb-balance-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-dim);
+    font-weight: 700;
+    position: relative;
+  }
+  .sb-balance-value {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    position: relative;
+  }
+  .sb-balance-coins {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 44px;
+    letter-spacing: 0.01em;
+    color: var(--accent-bright);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 12px rgba(212, 197, 160, 0.3);
+  }
+  .sb-balance-unit {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .sb-balance-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.04em;
+    position: relative;
+  }
+
+  /* Sub-nav */
+  .sb-subnav {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--bg-2);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .sb-subnav-btn {
+    flex: 1;
+    padding: 10px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sb-subnav-btn:hover { color: var(--ink-2); }
+  .sb-subnav-btn.active {
+    background: rgba(196, 178, 152, 0.14);
+    color: var(--ink);
+  }
+
+  .sb-subview { display: none; }
+  .sb-subview.active { display: block; }
+
+  .sb-empty-state {
+    padding: 60px 24px;
+    text-align: center;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.4);
+  }
+  .sb-empty-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--ink-2);
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
+  }
+  .sb-empty-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--ink-dim);
+    max-width: 280px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
 
   /* HERO SECTION */
   .hero {
@@ -3501,8 +3687,18 @@
 <div class="tab-nav">
   <button class="tab-nav-btn active" data-tab="home">Home</button>
   <button class="tab-nav-btn" data-tab="my">My Bracket</button>
+  <button class="tab-nav-btn" data-tab="sportsbook">Sportsbook</button>
   <button class="tab-nav-btn" data-tab="leaderboard">Leaderboard</button>
-  <button class="tab-nav-btn" data-tab="rules">Rules</button>
+  <button class="tab-nav-more" id="tabMoreBtn" aria-label="More" aria-haspopup="true" aria-expanded="false">
+    <span class="tab-more-dot"></span>
+    <span class="tab-more-dot"></span>
+    <span class="tab-more-dot"></span>
+  </button>
+</div>
+
+<!-- Overflow menu -->
+<div class="tab-more-menu" id="tabMoreMenu" hidden>
+  <button class="tab-more-item" data-tab="rules">Rules</button>
 </div>
 
 <div id="configWarning" class="config-warning" style="display:none;">
@@ -3612,6 +3808,52 @@
       <div class="empty-state-title">Your Bracket</div>
       <p style="margin-bottom: 20px; font-size: 14px;">Opening the bracket builder...</p>
       <a href="signup.html" class="cta-btn" style="max-width: 300px;" data-cta="get-started">Go to Bracket Builder</a>
+    </div>
+  </div>
+</div>
+
+<!-- SPORTSBOOK TAB -->
+<div class="tab-view" id="tab-sportsbook">
+  <div class="container">
+    <!-- Balance strip — always visible at top of sportsbook -->
+    <div class="sb-balance-strip">
+      <div class="sb-balance-label">YOUR BALANCE</div>
+      <div class="sb-balance-value" id="sbBalance">
+        <span class="sb-balance-coins">—</span>
+        <span class="sb-balance-unit">coins</span>
+      </div>
+      <div class="sb-balance-sub" id="sbBalanceSub">Loading…</div>
+    </div>
+
+    <!-- Sub-nav -->
+    <div class="sb-subnav">
+      <button class="sb-subnav-btn active" data-sbtab="games">Games</button>
+      <button class="sb-subnav-btn" data-sbtab="mybets">My Bets</button>
+      <button class="sb-subnav-btn" data-sbtab="leaderboard">Leaderboard</button>
+    </div>
+
+    <!-- Games sub-view -->
+    <div class="sb-subview active" id="sb-games">
+      <div class="sb-empty-state">
+        <div class="sb-empty-title">Games coming soon</div>
+        <div class="sb-empty-sub">Tap a player to place a bet · Singles and parlays supported</div>
+      </div>
+    </div>
+
+    <!-- My Bets sub-view -->
+    <div class="sb-subview" id="sb-mybets">
+      <div class="sb-empty-state">
+        <div class="sb-empty-title">No bets yet</div>
+        <div class="sb-empty-sub">Place your first bet from the Games tab</div>
+      </div>
+    </div>
+
+    <!-- Leaderboard sub-view -->
+    <div class="sb-subview" id="sb-leaderboard">
+      <div class="sb-empty-state">
+        <div class="sb-empty-title">No action yet</div>
+        <div class="sb-empty-sub">Rankings appear once bets are placed</div>
+      </div>
     </div>
   </div>
 </div>
@@ -7135,25 +7377,138 @@
     });
   }
 
+  // Unified tab switcher — handles both main tab buttons and overflow menu
+  function switchToTab(tab) {
+    if (tab === 'my') {
+      window.location.href = getStartedUrl();
+      return;
+    }
+    document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-more-item').forEach(b => b.classList.remove('active'));
+    const mainBtn = document.querySelector(`.tab-nav-btn[data-tab="${tab}"]`);
+    const moreItem = document.querySelector(`.tab-more-item[data-tab="${tab}"]`);
+    if (mainBtn) mainBtn.classList.add('active');
+    if (moreItem) moreItem.classList.add('active');
+    document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active', 'fade-in'));
+    const target = document.getElementById('tab-' + tab);
+    if (!target) return;
+    target.classList.add('active');
+    void target.offsetWidth;
+    target.classList.add('fade-in');
+    closeMoreMenu();
+    if (tab === 'leaderboard') renderLeaderboard();
+    if (tab === 'sportsbook') onSportsbookOpen();
+  }
+
   document.querySelectorAll('.tab-nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tab = btn.dataset.tab;
-      if (tab === 'my') {
-        window.location.href = getStartedUrl();
-        return;
+    btn.addEventListener('click', () => switchToTab(btn.dataset.tab));
+  });
+  document.querySelectorAll('.tab-more-item').forEach(btn => {
+    btn.addEventListener('click', () => switchToTab(btn.dataset.tab));
+  });
+
+  // Overflow menu (three-dots) — toggle on click, close on outside click
+  const moreBtn = document.getElementById('tabMoreBtn');
+  const moreMenu = document.getElementById('tabMoreMenu');
+  function openMoreMenu() {
+    if (!moreBtn || !moreMenu) return;
+    moreMenu.hidden = false;
+    moreBtn.setAttribute('aria-expanded', 'true');
+  }
+  function closeMoreMenu() {
+    if (!moreBtn || !moreMenu) return;
+    moreMenu.hidden = true;
+    moreBtn.setAttribute('aria-expanded', 'false');
+  }
+  if (moreBtn) {
+    moreBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (moreMenu.hidden) openMoreMenu(); else closeMoreMenu();
+    });
+    document.addEventListener('click', (e) => {
+      if (!moreMenu.hidden && !moreMenu.contains(e.target) && e.target !== moreBtn) {
+        closeMoreMenu();
       }
-      document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+    });
+  }
+
+  // Sub-tab wiring within Sportsbook
+  document.querySelectorAll('.sb-subnav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sbtab = btn.dataset.sbtab;
+      document.querySelectorAll('.sb-subnav-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      document.querySelectorAll('.tab-view').forEach(v => {
-        v.classList.remove('active', 'fade-in');
-      });
-      const target = document.getElementById('tab-' + tab);
-      target.classList.add('active');
-      void target.offsetWidth;
-      target.classList.add('fade-in');
-      if (tab === 'leaderboard') renderLeaderboard();
+      document.querySelectorAll('.sb-subview').forEach(v => v.classList.remove('active'));
+      const target = document.getElementById('sb-' + sbtab);
+      if (target) target.classList.add('active');
     });
   });
+
+  // Fires every time the user opens the Sportsbook tab — (re)fetches balance
+  async function onSportsbookOpen() {
+    await ensureSportsbookUser();
+    renderSportsbookBalance();
+  }
+
+  // Make sure the current user has a sportsbook_users row. Creates one with
+  // balance=1000 on first visit. Safe to call repeatedly.
+  let sportsbookBalance = null;
+  let sportsbookUserName = null;
+  async function ensureSportsbookUser() {
+    const name = (localStorage.getItem('bracketPoolUser') || '').trim();
+    if (!name) {
+      sportsbookUserName = null;
+      sportsbookBalance = null;
+      return;
+    }
+    sportsbookUserName = name;
+    if (!supa) {
+      console.warn('[sb] no Supabase client — balance stays null');
+      return;
+    }
+    try {
+      // Try to read existing row
+      const { data: existing, error: readErr } = await supa
+        .from('sportsbook_users')
+        .select('balance')
+        .eq('user_name', name)
+        .maybeSingle();
+      if (readErr) { console.warn('[sb] read err', readErr); return; }
+      if (existing) {
+        sportsbookBalance = existing.balance;
+        return;
+      }
+      // Create new row with starting balance
+      const { data: inserted, error: insErr } = await supa
+        .from('sportsbook_users')
+        .insert({ user_name: name, balance: 1000 })
+        .select('balance')
+        .maybeSingle();
+      if (insErr) { console.warn('[sb] insert err', insErr); return; }
+      sportsbookBalance = inserted?.balance ?? 1000;
+      console.log('[sb] created new user with 1000 coins');
+    } catch (err) {
+      console.warn('[sb] ensureSportsbookUser failed', err);
+    }
+  }
+
+  function renderSportsbookBalance() {
+    const coinEl = document.querySelector('#sbBalance .sb-balance-coins');
+    const subEl = document.getElementById('sbBalanceSub');
+    if (!coinEl || !subEl) return;
+    if (sportsbookUserName == null) {
+      coinEl.textContent = '—';
+      subEl.textContent = 'Sign up first to unlock the sportsbook';
+      return;
+    }
+    if (sportsbookBalance == null) {
+      coinEl.textContent = '—';
+      subEl.textContent = 'Balance unavailable · check your connection';
+      return;
+    }
+    coinEl.textContent = sportsbookBalance.toLocaleString();
+    subEl.textContent = `${sportsbookUserName} · Min bet 10 · Starting balance 1,000`;
+  }
 
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
