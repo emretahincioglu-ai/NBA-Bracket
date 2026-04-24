@@ -2837,11 +2837,16 @@
       const resp = await fetch(url, {
         headers: { 'Authorization': BALLDONTLIE_API_KEY }
       });
-      if (!resp.ok) return null;
+      if (!resp.ok) {
+        console.warn(`[stats] API ${resp.status} for game ${gameId}${resp.status === 429 ? ' (rate limited)' : ''}`);
+        return null;
+      }
       const json = await resp.json();
-      return json.data || [];
+      const rows = json.data || [];
+      console.log(`[stats] game ${gameId}: ${rows.length} player rows`);
+      return rows;
     } catch (err) {
-      console.warn('[boxscore] stats fetch failed', err);
+      console.warn('[stats] fetch failed for game', gameId, err);
       return null;
     }
   }
@@ -2977,13 +2982,14 @@
     if (oldIds !== newIds) mutated = true;
     boxGames = newBoxGames;
 
-    // Fetch stats for each box game (skip final ones we've already cached)
+    // Fetch stats for LIVE games every poll (so they're fresh when you open them).
+    // For final games, fetch stats lazily when the user expands the card — this
+    // massively reduces API call volume and avoids hitting the free tier rate limit.
     for (const g of boxGames) {
-      if (isFinalStatus(g.status) && boxStatsFinalCached.has(g.id)) continue;
+      if (!isLiveStatus(g.status)) continue; // lazy for finals
       const rows = await fetchStatsForGame(g.id);
       if (rows !== null) {
         boxStats[g.id] = rows;
-        if (isFinalStatus(g.status)) boxStatsFinalCached.add(g.id);
         mutated = true;
       }
     }
@@ -3241,8 +3247,37 @@
         const body = document.getElementById(`sc-body-${sid}`);
         const isOpen = header.classList.toggle('open');
         body.classList.toggle('open', isOpen);
-        if (isOpen) openScorecardRows.add(sid);
-        else openScorecardRows.delete(sid);
+        if (!isOpen) {
+          openScorecardRows.delete(sid);
+          return;
+        }
+        openScorecardRows.add(sid);
+
+        // On expand, if stats aren't loaded for this game yet, fetch them now.
+        // This keeps API usage minimal — we only pull box score detail when
+        // someone actually wants to see it.
+        const series = SERIES.find(s => s.id === sid);
+        if (!series) return;
+        const apiGame = boxGames.find(g =>
+          findSeriesByAbbrs(g.home_team?.abbreviation, g.visitor_team?.abbreviation)?.id === sid
+        );
+        if (apiGame && !boxStats[apiGame.id]) {
+          // Already showing "Loading…" — fetch and re-render this row's body
+          try {
+            const rows = await fetchStatsForGame(apiGame.id);
+            if (rows !== null && rows.length >= 0) {
+              boxStats[apiGame.id] = rows;
+              saveScorecardCache();
+              // Re-render just this body
+              const rowData = { series, mode: 'api', apiGame, pastGame: null };
+              body.innerHTML = renderScorecardBody(rowData, today);
+              // Keep it open after re-render
+              body.classList.add('open');
+            }
+          } catch (e) {
+            console.error('[stats] on-demand fetch failed', e);
+          }
+        }
       });
     });
   }
