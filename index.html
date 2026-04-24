@@ -302,6 +302,439 @@
     line-height: 1.5;
   }
 
+  /* Games list */
+  .sb-games-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .sb-game-group-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    font-weight: 700;
+    padding: 0 4px 8px;
+  }
+  .sb-game-card {
+    background: var(--bg-2);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .sb-game-card:hover {
+    border-color: rgba(196, 178, 152, 0.32);
+  }
+  .sb-game-card-head {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    color: inherit;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .sb-game-card-head:hover {
+    background: rgba(196, 178, 152, 0.04);
+  }
+  .sb-game-card-teams {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .sb-game-card-team {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sb-game-card-at {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    flex-shrink: 0;
+  }
+  .sb-game-card-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .sb-game-card-tipoff {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-2);
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .sb-game-card-chev {
+    color: var(--accent);
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.5;
+    transition: transform 0.25s, opacity 0.2s;
+  }
+  .sb-game-card.expanded .sb-game-card-chev {
+    transform: rotate(90deg);
+    opacity: 1;
+  }
+  .sb-game-card-locked {
+    padding: 4px 8px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--danger);
+    font-weight: 700;
+  }
+  .sb-game-card.locked {
+    opacity: 0.78;
+  }
+  .sb-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 7px;
+    background: rgba(239, 68, 68, 0.14);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--danger);
+    font-weight: 700;
+  }
+  .sb-live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--danger);
+    animation: sbLivePulse 1.2s infinite;
+  }
+  @keyframes sbLivePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  .sb-game-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease-out;
+  }
+  .sb-game-card.expanded .sb-game-card-body {
+    max-height: 9999px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .sb-loading {
+    padding: 40px 20px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+  }
+
+  /* ================== BET SLIP DRAWER ================== */
+  .bet-slip-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 99997;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .bet-slip-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .bet-slip-drawer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 99998;
+    background: var(--bg-2);
+    border-top: 1px solid var(--line);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.7);
+    max-height: 88vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+  }
+  .bet-slip-drawer.open {
+    transform: translateY(0);
+  }
+  .bet-slip-handle {
+    width: 40px; height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    margin: 10px auto 4px;
+  }
+  .bet-slip-head {
+    padding: 8px 18px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .bet-slip-player {
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .bet-slip-sub {
+    margin-top: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  .bet-slip-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(196, 178, 152, 0.08);
+    border: 1px solid rgba(196, 178, 152, 0.2);
+    color: var(--ink-2);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .bet-slip-close:hover { background: rgba(196, 178, 152, 0.16); }
+
+  /* Line selector — horizontal row of 5 tabs */
+  .bet-slip-section {
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .bet-slip-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .bet-slip-lines {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+  .bet-slip-line-btn {
+    padding: 10px 4px;
+    background: rgba(196, 178, 152, 0.04);
+    border: 1px solid rgba(196, 178, 152, 0.22);
+    border-radius: 6px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--ink-2);
+    cursor: pointer;
+    text-align: center;
+    line-height: 1;
+    transition: all 0.15s;
+    font-variant-numeric: tabular-nums;
+  }
+  .bet-slip-line-btn.main {
+    border-color: rgba(196, 178, 152, 0.5);
+    font-weight: 700;
+  }
+  .bet-slip-line-btn.active {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    border-color: var(--accent-bright);
+    color: var(--ink);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  /* Over / Under side selector */
+  .bet-slip-sides {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .bet-slip-side-btn {
+    padding: 14px 12px;
+    background: rgba(196, 178, 152, 0.04);
+    border: 1px solid rgba(196, 178, 152, 0.22);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+    color: var(--ink);
+    transition: all 0.15s;
+  }
+  .bet-slip-side-btn .bss-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--ink-2);
+    text-transform: uppercase;
+  }
+  .bet-slip-side-btn .bss-odds {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-bright);
+    font-variant-numeric: tabular-nums;
+  }
+  .bet-slip-side-btn.active {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    border-color: var(--accent-bright);
+  }
+  .bet-slip-side-btn.active .bss-label { color: var(--ink); }
+
+  /* Stake input + chips */
+  .bet-slip-stake {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .bet-slip-stake input {
+    flex: 1;
+    padding: 14px 16px;
+    background: rgba(10, 10, 10, 0.6);
+    border: 1px solid rgba(196, 178, 152, 0.3);
+    border-radius: 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--ink);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    outline: none;
+    min-width: 0;
+  }
+  .bet-slip-stake input:focus {
+    border-color: var(--accent-bright);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+  .bet-slip-stake-unit {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  .bet-slip-chips {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .bet-slip-chip {
+    padding: 8px 4px;
+    background: rgba(196, 178, 152, 0.06);
+    border: 1px solid rgba(196, 178, 152, 0.22);
+    border-radius: 5px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .bet-slip-chip:hover {
+    background: rgba(196, 178, 152, 0.14);
+    color: var(--ink);
+  }
+
+  /* Payout preview */
+  .bet-slip-payout {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 14px 18px;
+    background: rgba(196, 178, 152, 0.04);
+    border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .bet-slip-payout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    font-weight: 700;
+  }
+  .bet-slip-payout-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--accent-bright);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Submit */
+  .bet-slip-submit {
+    display: block;
+    width: calc(100% - 36px);
+    margin: 16px 18px 0;
+    padding: 16px;
+    background: linear-gradient(180deg, var(--accent-bright), var(--accent));
+    color: #0a0a0a;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.12s, opacity 0.2s;
+  }
+  .bet-slip-submit:hover {
+    transform: translateY(-1px);
+  }
+  .bet-slip-submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .bet-slip-err {
+    color: var(--danger);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    padding: 8px 18px 0;
+    text-align: center;
+  }
+
+  @media (max-width: 560px) {
+    .bet-slip-line-btn { font-size: 16px; padding: 9px 3px; }
+    .bet-slip-side-btn { padding: 12px 10px; }
+    .bet-slip-side-btn .bss-odds { font-size: 16px; }
+    .bet-slip-stake input { font-size: 20px; padding: 12px 14px; }
+    .sb-game-card-team { font-size: 14px; }
+  }
+
   /* HERO SECTION */
   .hero {
     padding: 44px 20px 32px;
@@ -3834,10 +4267,7 @@
 
     <!-- Games sub-view -->
     <div class="sb-subview active" id="sb-games">
-      <div class="sb-empty-state">
-        <div class="sb-empty-title">Games coming soon</div>
-        <div class="sb-empty-sub">Tap a player to place a bet · Singles and parlays supported</div>
-      </div>
+      <div id="sbGamesList" class="sb-games-list"></div>
     </div>
 
     <!-- My Bets sub-view -->
@@ -7448,6 +7878,7 @@
   async function onSportsbookOpen() {
     await ensureSportsbookUser();
     renderSportsbookBalance();
+    renderSportsbookGames();
   }
 
   // Make sure the current user has a sportsbook_users row. Creates one with
@@ -7509,6 +7940,577 @@
     coinEl.textContent = sportsbookBalance.toLocaleString();
     subEl.textContent = `${sportsbookUserName} · Min bet 10 · Starting balance 1,000`;
   }
+
+  // ================== SPORTSBOOK GAMES LIST ==================
+  // Gathers tonight + next-few-days of scheduled+live games into a flat
+  // list, grouped by date. Reuses boxGames + fetchGamesForDate data.
+  const sbGameExpanded = {}; // gameId → true if expanded
+  async function renderSportsbookGames() {
+    const container = document.getElementById('sbGamesList');
+    if (!container) return;
+
+    // Use currentRowsRef (populated by renderScorecard) as the primary source.
+    // If empty (user hasn't opened home yet), fall back to a direct fetch.
+    const [yesterday, today] = relevantDates();
+    let liveRows = currentRowsRef?.liveRowsToShow || [];
+    let scheduledRows = currentRowsRef?.scheduledRowsToShow || [];
+
+    // Also include tomorrow + day after if not already represented, so users
+    // can bet on games up to 2 days out.
+    // This happens naturally via the existing sync for now. Future: explicit fetch.
+
+    if (!liveRows.length && !scheduledRows.length) {
+      container.innerHTML = `
+        <div class="sb-empty-state">
+          <div class="sb-empty-title">No games right now</div>
+          <div class="sb-empty-sub">Check back closer to tipoff</div>
+        </div>
+      `;
+      return;
+    }
+
+    // Group by viewing-date (today, tomorrow, etc.)
+    const all = [...liveRows, ...scheduledRows];
+    const byDate = {};
+    all.forEach(r => {
+      const d = r.apiGame?.date || today;
+      (byDate[d] = byDate[d] || []).push(r);
+    });
+    const sortedDates = Object.keys(byDate).sort();
+
+    const sectionsHtml = sortedDates.map(d => {
+      const rows = byDate[d];
+      const label = d === today ? 'Tonight' : dayLabel(d);
+      const cardsHtml = rows.map(r => renderSbGameCard(r, today)).join('');
+      return `
+        <div class="sb-game-group">
+          <div class="sb-game-group-label">${label}</div>
+          ${cardsHtml}
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = sectionsHtml;
+
+    // Wire expand handlers for each card
+    container.querySelectorAll('.sb-game-card-head').forEach(headEl => {
+      headEl.addEventListener('click', async (e) => {
+        const card = headEl.closest('.sb-game-card');
+        const gameId = card.dataset.gameId;
+        const wasExpanded = card.classList.contains('expanded');
+        card.classList.toggle('expanded');
+        sbGameExpanded[gameId] = !wasExpanded;
+        if (wasExpanded) return; // just collapsed — no fetch needed
+        // Load props (reuse existing flow)
+        const rowData = [...(currentRowsRef?.liveRowsToShow || []),
+                         ...(currentRowsRef?.scheduledRowsToShow || [])]
+          .find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
+        if (!rowData) return;
+        const g = rowData.apiGame;
+        const bodyEl = card.querySelector('.sb-game-card-body');
+        if (!bodyEl) return;
+        // If props already cached, render immediately
+        if (boxPlayerProps[g.id]) {
+          bodyEl.innerHTML = renderPropsTable(g, rowData.series, boxPlayerProps[g.id], boxStats[g.id]);
+          // Ensure names + season avgs available
+          const cachedIds = Object.keys(boxPlayerProps[g.id]);
+          const needNames = cachedIds.some(id => !playerNameCache[id]);
+          const needAvgs = cachedIds.some(id => !seasonAvgCache[id]);
+          if (needNames || needAvgs) {
+            await Promise.all([
+              needNames ? fetchPlayerNames(cachedIds) : Promise.resolve(),
+              needAvgs  ? fetchSeasonAvgs(cachedIds)  : Promise.resolve()
+            ]);
+            bodyEl.innerHTML = renderPropsTable(g, rowData.series, boxPlayerProps[g.id], boxStats[g.id]);
+          }
+          return;
+        }
+        // Show loading state
+        bodyEl.innerHTML = `<div class="sb-loading">Loading props…</div>`;
+        const realGameId = g.real_game_id || (typeof g.id === 'number' ? g.id : null);
+        if (!realGameId) {
+          bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">Props unavailable for this game</div></div>`;
+          return;
+        }
+        const props = await fetchPlayerPropsForGame(realGameId);
+        if (!props) {
+          bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">DraftKings hasn't posted props yet</div></div>`;
+          return;
+        }
+        boxPlayerProps[g.id] = props;
+        const ids = Object.keys(props);
+        await Promise.all([fetchPlayerNames(ids), fetchSeasonAvgs(ids)]);
+        bodyEl.innerHTML = renderPropsTable(g, rowData.series, boxPlayerProps[g.id], boxStats[g.id]);
+      });
+    });
+  }
+
+  // Render a single game card in the Sportsbook Games list.
+  function renderSbGameCard(rowData, today) {
+    const g = rowData.apiGame;
+    const series = rowData.series;
+    const homeT = getTeam(series.home);
+    const awayT = getTeam(series.away);
+    const isLive = isLiveStatus(g.status);
+    const expanded = !!sbGameExpanded[g.id];
+
+    // Lock status — bets locked once game goes live
+    const locked = isLive || isFinalStatus(g.status);
+
+    let tipoffLabel = '';
+    if (isLive) {
+      tipoffLabel = `<span class="sb-live-badge"><span class="sb-live-dot"></span>LIVE · ${escapeHtml(g.status)}</span>`;
+    } else {
+      tipoffLabel = escapeHtml(formatSbTipoff(g));
+    }
+
+    return `
+      <div class="sb-game-card ${expanded ? 'expanded' : ''} ${locked ? 'locked' : ''}" data-game-id="${g.id}">
+        <button class="sb-game-card-head" type="button">
+          <div class="sb-game-card-teams">
+            <span class="sb-game-card-team">${escapeHtml(awayT.abbr)} ${escapeHtml(awayT.name.split(' ').pop())}</span>
+            <span class="sb-game-card-at">@</span>
+            <span class="sb-game-card-team">${escapeHtml(homeT.abbr)} ${escapeHtml(homeT.name.split(' ').pop())}</span>
+          </div>
+          <div class="sb-game-card-right">
+            <span class="sb-game-card-tipoff">${tipoffLabel}</span>
+            ${locked
+              ? '<span class="sb-game-card-locked">LOCKED</span>'
+              : '<span class="sb-game-card-chev">›</span>'}
+          </div>
+        </button>
+        <div class="sb-game-card-body"></div>
+      </div>
+    `;
+  }
+
+  // Format tipoff for sportsbook cards — "TONIGHT 10:30 PM ET" etc.
+  function formatSbTipoff(game) {
+    const raw = game.datetime || game.status || '';
+    const isIso = /T\d\d:\d\d/.test(raw);
+    if (isIso) {
+      try {
+        const dt = new Date(raw);
+        if (!isNaN(dt.getTime())) {
+          const timeStr = dt.toLocaleTimeString('en-US', {
+            timeZone: 'America/New_York',
+            hour: 'numeric', minute: '2-digit', hour12: true
+          });
+          return timeStr.replace(' ', '').toUpperCase() + ' ET';
+        }
+      } catch (_) { /* fall through */ }
+    }
+    return String(raw).toUpperCase();
+  }
+
+  // Extend onSportsbookOpen to render games + bets when tab opened
+  // (handled by inlining renderSportsbookGames() directly in onSportsbookOpen above)
+
+  // ================== ALTERNATE LINES + BETTING MATH ==================
+  // Given a main line and its American odds, plus the player's last-10-games
+  // values for this stat (for std dev estimation), return 5 alternate lines
+  // with estimated American odds — main line in the middle position.
+  //
+  // Math: use normal distribution shifting. Convert DK's over-odds to implied
+  // probability, subtract vig (assume 4.5%), use that + std dev to estimate
+  // the mean, then compute probability at each alternate line, add vig back.
+
+  // Normal CDF approximation (Abramowitz-Stegun)
+  function normCdf(x) {
+    const a1 =  0.254829592;
+    const a2 = -0.284496736;
+    const a3 =  1.421413741;
+    const a4 = -1.453152027;
+    const a5 =  1.061405429;
+    const p  =  0.3275911;
+    const sign = x < 0 ? -1 : 1;
+    x = Math.abs(x) / Math.sqrt(2);
+    const t = 1 / (1 + p * x);
+    const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+    return 0.5 * (1 + sign * y);
+  }
+  function inverseNormCdf(p) {
+    // Approximate inverse normal CDF. p in (0,1).
+    if (p <= 0) p = 0.0001;
+    if (p >= 1) p = 0.9999;
+    // Beasley-Springer-Moro algorithm (light version)
+    const a = [-39.6968302866538, 220.946098424521, -275.928510446969,
+               138.357751867269, -30.6647980661472, 2.50662827745924];
+    const b = [-54.4760987982241, 161.585836858041, -155.698979859887,
+               66.8013118877197, -13.2806815528857];
+    const c = [-0.00778489400243029, -0.322396458041136, -2.40075827716184,
+               -2.54973253934373, 4.37466414146497, 2.93816398269878];
+    const d = [0.00778469570904146, 0.32246712907004, 2.445134137143,
+               3.75440866190742];
+    const pl = 0.02425, ph = 1 - pl;
+    let q, r;
+    if (p < pl) {
+      q = Math.sqrt(-2 * Math.log(p));
+      return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+             ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+    } else if (p <= ph) {
+      q = p - 0.5; r = q * q;
+      return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q /
+             (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+    } else {
+      q = Math.sqrt(-2 * Math.log(1 - p));
+      return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+              ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+    }
+  }
+  // American odds ↔ implied probability (no vig adjustment here)
+  function americanToImplied(odds) {
+    if (odds == null) return null;
+    const a = Number(odds);
+    if (!Number.isFinite(a) || a === 0) return null;
+    return a > 0 ? 100 / (a + 100) : Math.abs(a) / (Math.abs(a) + 100);
+  }
+  function impliedToAmerican(p) {
+    if (p <= 0 || p >= 1) return null;
+    if (p >= 0.5) {
+      const odds = -100 * p / (1 - p);
+      return Math.round(odds);
+    } else {
+      const odds = 100 * (1 - p) / p;
+      return Math.round(odds);
+    }
+  }
+
+  // Reasonable std-dev estimates per stat type, used as a fallback when we
+  // don't have the player's last-10 games yet. These come from typical NBA
+  // playoff distributions.
+  const DEFAULT_STD = {
+    points: 7.5,
+    rebounds: 2.8,
+    assists: 2.3,
+    threes: 1.3,
+    blocks: 0.9,
+    steals: 0.9
+  };
+
+  // Line step sizes per stat — how far between alternate lines
+  const LINE_STEP = {
+    points: 2.0,
+    rebounds: 1.0,
+    assists: 1.0,
+    threes: 0.5,
+    blocks: 0.5,
+    steals: 0.5
+  };
+
+  // Build 5 alternate lines around the main line. Returns array of
+  // { line, overOdds, underOdds, isMain }.
+  function buildAlternateLines(mainLine, overOdds, underOdds, statType) {
+    if (mainLine == null) return [];
+    const step = LINE_STEP[statType] || 1.0;
+    const std = DEFAULT_STD[statType] || 3.0;
+
+    // Estimate mean and fair probability at the main line
+    const overImplied = americanToImplied(overOdds);
+    const underImplied = americanToImplied(underOdds);
+    // Remove vig (rebase the two sides to sum to 1.0)
+    let fairOverAtMain = 0.5;
+    if (overImplied != null && underImplied != null) {
+      const total = overImplied + underImplied;
+      if (total > 0) fairOverAtMain = overImplied / total;
+    } else if (overImplied != null) {
+      fairOverAtMain = overImplied;
+    }
+    // Work out the implied mean: if P(X > line) = fairOverAtMain, and X~N(μ, σ²),
+    // then z = (μ - line) / σ = inverseNormCdf(fairOverAtMain)
+    const z = inverseNormCdf(fairOverAtMain);
+    const mean = mainLine + z * std;
+
+    const lines = [
+      mainLine - 2 * step,
+      mainLine - step,
+      mainLine,
+      mainLine + step,
+      mainLine + 2 * step
+    ];
+
+    // Add 4.5% vig split evenly — true probability → displayed probability → odds
+    const VIG = 0.045;
+    return lines.map(line => {
+      const fairOver = 1 - normCdf((line - mean) / std);
+      const fairUnder = 1 - fairOver;
+      // Push each toward the middle to add vig (more likely side gets more juice)
+      const displayOver = fairOver * (1 + VIG / 2);
+      const displayUnder = fairUnder * (1 + VIG / 2);
+      // Clamp to avoid inf odds
+      const clamped = (p) => Math.max(0.02, Math.min(0.98, p));
+      return {
+        line,
+        overOdds: impliedToAmerican(clamped(displayOver)),
+        underOdds: impliedToAmerican(clamped(displayUnder)),
+        isMain: line === mainLine
+      };
+    });
+  }
+
+  // ================== BET SLIP DRAWER ==================
+  // State of the currently-open bet slip
+  let betSlip = null;
+
+  function ensureBetSlipMount() {
+    if (document.getElementById('betSlipBackdrop')) return;
+    const bd = document.createElement('div');
+    bd.id = 'betSlipBackdrop';
+    bd.className = 'bet-slip-backdrop';
+    bd.addEventListener('click', closeBetSlip);
+    document.body.appendChild(bd);
+
+    const dr = document.createElement('div');
+    dr.id = 'betSlipDrawer';
+    dr.className = 'bet-slip-drawer';
+    document.body.appendChild(dr);
+  }
+
+  function openBetSlip(opts) {
+    // opts: { playerId, gameId, propType, mainLine, mainOverOdds, mainUnderOdds }
+    ensureBetSlipMount();
+    const meta = playerNameCache[opts.playerId] || {};
+    const name = `${meta.first || ''} ${meta.last || ''}`.trim() || `Player ${opts.playerId}`;
+    const teamAbbr = meta.teamAbbr || '';
+
+    const alts = buildAlternateLines(opts.mainLine, opts.mainOverOdds, opts.mainUnderOdds, opts.propType);
+
+    // Default selections: main line, Over side, empty stake
+    betSlip = {
+      ...opts,
+      name,
+      teamAbbr,
+      alts,
+      selectedLineIdx: alts.findIndex(a => a.isMain),
+      side: 'over',
+      stake: ''
+    };
+
+    renderBetSlip();
+
+    requestAnimationFrame(() => {
+      document.getElementById('betSlipBackdrop').classList.add('open');
+      document.getElementById('betSlipDrawer').classList.add('open');
+    });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeBetSlip() {
+    const bd = document.getElementById('betSlipBackdrop');
+    const dr = document.getElementById('betSlipDrawer');
+    if (bd) bd.classList.remove('open');
+    if (dr) dr.classList.remove('open');
+    betSlip = null;
+    document.body.style.overflow = '';
+  }
+
+  function renderBetSlip() {
+    const dr = document.getElementById('betSlipDrawer');
+    if (!dr || !betSlip) return;
+    const { name, teamAbbr, alts, selectedLineIdx, side, stake, propType } = betSlip;
+    const activeAlt = alts[selectedLineIdx] || alts.find(a => a.isMain) || alts[0];
+    const activeOdds = side === 'over' ? activeAlt.overOdds : activeAlt.underOdds;
+    const activeDec = americanToDecimal(activeOdds);
+    const stakeNum = Number(stake) || 0;
+    const payout = (stakeNum > 0 && activeDec) ? Math.round(stakeNum * activeDec) : 0;
+
+    const propLabel = ({
+      points: 'Points', rebounds: 'Rebounds', assists: 'Assists',
+      threes: '3-Pointers', blocks: 'Blocks', steals: 'Steals'
+    })[propType] || propType;
+
+    const linesHtml = alts.map((a, i) => `
+      <button class="bet-slip-line-btn ${a.isMain ? 'main' : ''} ${i === selectedLineIdx ? 'active' : ''}"
+              data-bs-line="${i}" type="button">
+        ${a.line}
+      </button>
+    `).join('');
+
+    const overDec = americanToDecimal(activeAlt.overOdds);
+    const underDec = americanToDecimal(activeAlt.underOdds);
+
+    // Min-bet check for submit button
+    const canPlace = stakeNum >= 10 && stakeNum <= (sportsbookBalance || 0);
+    let submitLabel = 'Place Bet';
+    if (stakeNum > 0 && stakeNum < 10) submitLabel = 'Min bet is 10';
+    else if (stakeNum > (sportsbookBalance || 0)) submitLabel = 'Insufficient coins';
+
+    dr.innerHTML = `
+      <div class="bet-slip-handle"></div>
+      <div class="bet-slip-head">
+        <div>
+          <div class="bet-slip-player">${escapeHtml(name)}</div>
+          <div class="bet-slip-sub">${escapeHtml(teamAbbr)} · ${escapeHtml(propLabel)}</div>
+        </div>
+        <button class="bet-slip-close" type="button" id="betSlipCloseBtn" aria-label="Close">×</button>
+      </div>
+
+      <div class="bet-slip-section">
+        <div class="bet-slip-label">Line</div>
+        <div class="bet-slip-lines">${linesHtml}</div>
+      </div>
+
+      <div class="bet-slip-section">
+        <div class="bet-slip-label">Pick a side</div>
+        <div class="bet-slip-sides">
+          <button class="bet-slip-side-btn ${side === 'over' ? 'active' : ''}" data-bs-side="over" type="button">
+            <span class="bss-label">Over ${activeAlt.line}</span>
+            <span class="bss-odds">${overDec != null ? overDec.toFixed(2) : '—'}</span>
+          </button>
+          <button class="bet-slip-side-btn ${side === 'under' ? 'active' : ''}" data-bs-side="under" type="button">
+            <span class="bss-label">Under ${activeAlt.line}</span>
+            <span class="bss-odds">${underDec != null ? underDec.toFixed(2) : '—'}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bet-slip-section">
+        <div class="bet-slip-label">Stake (coins)</div>
+        <div class="bet-slip-stake">
+          <input type="number" inputmode="numeric" id="betSlipStakeInput" placeholder="0" value="${stake}" min="10" step="1" />
+          <div class="bet-slip-stake-unit">COINS</div>
+        </div>
+        <div class="bet-slip-chips">
+          <button class="bet-slip-chip" data-bs-chip="10" type="button">10</button>
+          <button class="bet-slip-chip" data-bs-chip="50" type="button">50</button>
+          <button class="bet-slip-chip" data-bs-chip="100" type="button">100</button>
+          <button class="bet-slip-chip" data-bs-chip="max" type="button">MAX</button>
+        </div>
+      </div>
+
+      <div class="bet-slip-payout">
+        <span class="bet-slip-payout-label">Potential Payout</span>
+        <span class="bet-slip-payout-val">${payout.toLocaleString()} coins</span>
+      </div>
+
+      <button class="bet-slip-submit" type="button" id="betSlipSubmitBtn" ${canPlace ? '' : 'disabled'}>
+        ${submitLabel}
+      </button>
+    `;
+
+    wireBetSlipEvents();
+  }
+
+  function wireBetSlipEvents() {
+    const dr = document.getElementById('betSlipDrawer');
+    if (!dr) return;
+
+    dr.querySelector('#betSlipCloseBtn')?.addEventListener('click', closeBetSlip);
+
+    dr.querySelectorAll('[data-bs-line]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!betSlip) return;
+        betSlip.selectedLineIdx = Number(btn.dataset.bsLine);
+        renderBetSlip();
+      });
+    });
+
+    dr.querySelectorAll('[data-bs-side]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!betSlip) return;
+        betSlip.side = btn.dataset.bsSide;
+        renderBetSlip();
+      });
+    });
+
+    dr.querySelectorAll('[data-bs-chip]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!betSlip) return;
+        const v = btn.dataset.bsChip;
+        if (v === 'max') {
+          betSlip.stake = String(sportsbookBalance || 0);
+        } else {
+          betSlip.stake = v;
+        }
+        renderBetSlip();
+      });
+    });
+
+    const stakeInput = dr.querySelector('#betSlipStakeInput');
+    if (stakeInput) {
+      stakeInput.addEventListener('input', (e) => {
+        if (!betSlip) return;
+        // Strip non-digit except nothing (integer only)
+        const cleaned = e.target.value.replace(/[^0-9]/g, '');
+        betSlip.stake = cleaned;
+        // Only re-render the payout + submit — avoid re-rendering input (would lose focus)
+        updateBetSlipPayoutAndSubmit();
+      });
+    }
+
+    dr.querySelector('#betSlipSubmitBtn')?.addEventListener('click', () => {
+      // Session 2a: placeholder — session 2b will wire to Supabase
+      if (!betSlip) return;
+      const btn = dr.querySelector('#betSlipSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Session 2b will wire this up';
+      setTimeout(() => { closeBetSlip(); }, 900);
+    });
+  }
+
+  // Update just payout + submit without full re-render (so stake input keeps focus)
+  function updateBetSlipPayoutAndSubmit() {
+    if (!betSlip) return;
+    const dr = document.getElementById('betSlipDrawer');
+    if (!dr) return;
+    const { alts, selectedLineIdx, side, stake } = betSlip;
+    const activeAlt = alts[selectedLineIdx] || alts.find(a => a.isMain) || alts[0];
+    const activeOdds = side === 'over' ? activeAlt.overOdds : activeAlt.underOdds;
+    const activeDec = americanToDecimal(activeOdds);
+    const stakeNum = Number(stake) || 0;
+    const payout = (stakeNum > 0 && activeDec) ? Math.round(stakeNum * activeDec) : 0;
+    const payoutEl = dr.querySelector('.bet-slip-payout-val');
+    if (payoutEl) payoutEl.textContent = `${payout.toLocaleString()} coins`;
+    const submitBtn = dr.querySelector('#betSlipSubmitBtn');
+    if (submitBtn) {
+      const canPlace = stakeNum >= 10 && stakeNum <= (sportsbookBalance || 0);
+      let label = 'Place Bet';
+      if (stakeNum > 0 && stakeNum < 10) label = 'Min bet is 10';
+      else if (stakeNum > (sportsbookBalance || 0)) label = 'Insufficient coins';
+      submitBtn.disabled = !canPlace;
+      submitBtn.textContent = label;
+    }
+  }
+
+  // Hook into the main-site onclick for player rows. When inside Sportsbook tab,
+  // open the bet slip instead of the modal. We detect by checking if the click
+  // happened inside the Sportsbook games list.
+  const _originalOpenPlayer = window.__openPlayer;
+  window.__openPlayer = function(playerId, gameId) {
+    // Find the clicked row to detect context
+    const rowEl = document.querySelector(`.pv2-row[data-player-id="${playerId}"][data-game-id="${gameId}"]`);
+    const insideSportsbook = rowEl && rowEl.closest('#sb-games');
+    if (!insideSportsbook) {
+      // Original behavior (player detail modal)
+      if (_originalOpenPlayer) _originalOpenPlayer(playerId, gameId);
+      return;
+    }
+    // Sportsbook — open the bet slip. Find game + props.
+    const rowData = [...(currentRowsRef?.liveRowsToShow || []),
+                     ...(currentRowsRef?.scheduledRowsToShow || [])]
+      .find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
+    if (!rowData) return;
+    const g = rowData.apiGame;
+    // Bets lock once game is live
+    if (isLiveStatus(g.status) || isFinalStatus(g.status)) {
+      // TODO: show toast
+      console.log('[betSlip] bets locked — game is live or final');
+      return;
+    }
+    const props = boxPlayerProps[g.id]?.[playerId];
+    if (!props) return;
+    // Default prop to bet on: points if available, else first stat with a line
+    const ORDER = ['points','rebounds','assists','threes','blocks','steals'];
+    const propType = ORDER.find(k => props[k]?.line != null);
+    if (!propType) return;
+    const { line, overOdds, underOdds } = props[propType];
+    openBetSlip({
+      playerId, gameId, propType,
+      mainLine: line,
+      mainOverOdds: overOdds,
+      mainUnderOdds: underOdds
+    });
+  };
 
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
