@@ -2733,14 +2733,14 @@
       });
       if (!resp.ok) {
         console.warn('[live] API returned', resp.status, 'for', dateStr);
-        return [];
+        return null; // null = call failed, distinct from empty array
       }
       const json = await resp.json();
       console.log(`[live] ${dateStr}: ${(json.data || []).length} games`);
       return json.data || [];
     } catch (err) {
       console.warn('[live] fetch failed', err);
-      return [];
+      return null;
     }
   }
 
@@ -2788,9 +2788,20 @@
   async function syncLiveScores() {
     const dates = relevantDates();
     const allGames = [];
+    let anyFetchSucceeded = false;
     for (const d of dates) {
       const games = await fetchGamesForDate(d);
-      allGames.push(...games);
+      if (games !== null) {
+        anyFetchSucceeded = true;
+        allGames.push(...games);
+      }
+    }
+
+    // If EVERY date fetch failed (network down, rate limited, etc.), keep
+    // the previously loaded boxGames in place rather than wiping them.
+    if (!anyFetchSucceeded) {
+      console.warn('[live] all fetches failed, preserving previous state');
+      return { mutated: false, anyLive: boxGames.some(g => isLiveStatus(g.status)) };
     }
 
     let anyLive = false;
@@ -2911,7 +2922,11 @@
   // Polling orchestration: faster cadence when live games are on,
   // slow cadence otherwise.
   let pollTimer = null;
+  let lastPollTime = 0;
+  const POLL_COOLDOWN_MS = 30 * 1000; // minimum time between polls
+
   async function runPoll() {
+    lastPollTime = Date.now();
     const result = await syncLiveScores();
     const interval = result.anyLive ? 90 * 1000 : 5 * 60 * 1000;
     pollTimer = setTimeout(runPoll, interval);
@@ -2920,12 +2935,17 @@
     // Only enable if a real key was dropped in
     if (!BALLDONTLIE_API_KEY || BALLDONTLIE_API_KEY === 'YOUR_KEY_HERE') return;
     runPoll();
-    // Also re-sync when the tab regains focus (mobile users often background the app)
+    // Also re-sync when the tab regains focus — but only if we haven't polled
+    // recently. Prevents tab-switching from rapidly burning through rate limits.
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
-        runPoll();
+      if (document.visibilityState !== 'visible') return;
+      const elapsed = Date.now() - lastPollTime;
+      if (elapsed < POLL_COOLDOWN_MS) {
+        console.log('[live] tab visible, but cooldown active — skipping poll');
+        return;
       }
+      if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+      runPoll();
     });
   }
 
