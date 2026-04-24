@@ -2851,6 +2851,29 @@
     }
   }
 
+  // GOAT-tier: live box scores endpoint returns ALL of today's games
+  // (live + final) WITH embedded player stat arrays in a single call.
+  // Returns { games: [...], err: null } or { games: null, err: 'reason' }.
+  async function fetchLiveBoxScores() {
+    try {
+      const url = `${BDL_BASE}/box_scores/live`;
+      const resp = await fetch(url, {
+        headers: { 'Authorization': BALLDONTLIE_API_KEY }
+      });
+      if (!resp.ok) {
+        console.warn(`[livebox] API ${resp.status}`);
+        return { games: null, err: `http_${resp.status}` };
+      }
+      const json = await resp.json();
+      const games = json.data || [];
+      console.log(`[livebox] ${games.length} games returned`);
+      return { games, err: null };
+    } catch (err) {
+      console.warn('[livebox] fetch failed', err);
+      return { games: null, err: 'network' };
+    }
+  }
+
   // Returns yesterday, today, tomorrow in America/New_York.
   // We pull a 3-day window because game timezone handling can put a game
   // under today, yesterday, or tomorrow depending on how the API rolls dates.
@@ -2866,109 +2889,156 @@
     return [fmt(yest), today, fmt(tmrw)];
   }
 
-  // Core sync: pull today's games, fold results into SERIES.
-  // Returns true if any state changed, so caller can re-render.
+  // Core sync: use GOAT-tier /box_scores/live endpoint for today's games
+  // (which returns games WITH player stats in a single call), then fall back
+  // to /games for yesterday's finals if nothing is happening today.
   async function syncLiveScores() {
-    const dates = relevantDates();
-    const allGames = [];
-    let anyFetchSucceeded = false;
-    for (const d of dates) {
-      const games = await fetchGamesForDate(d);
-      if (games !== null) {
-        anyFetchSucceeded = true;
-        allGames.push(...games);
-      }
-    }
+    const [yesterday, today] = relevantDates();
 
-    // If EVERY date fetch failed (network down, rate limited, etc.), keep
-    // the previously loaded boxGames in place rather than wiping them.
-    if (!anyFetchSucceeded) {
-      console.warn('[live] all fetches failed, preserving previous state');
+    // Primary fetch: live box scores (today only, includes player stats inline)
+    const { games: liveBoxData, err: liveErr } = await fetchLiveBoxScores();
+
+    // Secondary fetch: yesterday's games (for fallback display when no games today)
+    const yestGames = await fetchGamesForDate(yesterday);
+    const yestFetchSucceeded = yestGames !== null;
+
+    // If primary fetch totally failed AND we have no fallback AND no cached
+    // state, preserve what we already have.
+    if (liveErr && !yestFetchSucceeded && boxGames.length === 0) {
+      console.warn('[live] all fetches failed, nothing to show');
+      return { mutated: false, anyLive: false };
+    }
+    // If primary fetch failed but we have stale state, keep it.
+    if (liveErr && !yestFetchSucceeded) {
+      console.warn('[live] primary fetch failed, preserving previous state');
       return { mutated: false, anyLive: boxGames.some(g => isLiveStatus(g.status)) };
     }
 
     let anyLive = false;
     let mutated = false;
 
-    for (const g of allGames) {
-      const homeAbbr = g.home_team?.abbreviation;
-      const awayAbbr = g.visitor_team?.abbreviation;
-      if (!homeAbbr || !awayAbbr) continue;
+    // Convert live-box-scores games → our internal game+stats shape.
+    // Each live-box game has home_team.players[] and visitor_team.players[]
+    // which we flatten to a single array of stat rows.
+    const newBoxGames = [];
+    const newBoxStats = {};
 
-      const series = findSeriesByAbbrs(homeAbbr, awayAbbr);
-      if (!series) continue; // Not a series we track (pre-play-in etc)
+    if (liveBoxData && Array.isArray(liveBoxData)) {
+      for (const lb of liveBoxData) {
+        const homeAbbr = lb.home_team?.abbreviation;
+        const awayAbbr = lb.visitor_team?.abbreviation;
+        if (!homeAbbr || !awayAbbr) continue;
+        // Only include games from series we track
+        if (!findSeriesByAbbrs(homeAbbr, awayAbbr)) continue;
 
-      // Which of the series's teams is the "home" side in the API result?
-      const apiHomeName = ABBR_TO_NAME[homeAbbr];
-      const apiAwayName = ABBR_TO_NAME[awayAbbr];
-      const hs = g.home_team_score;
-      const as = g.visitor_team_score;
+        // Synthesize a stable game ID (the endpoint doesn't include one)
+        const gameId = `live-${lb.date}-${awayAbbr}@${homeAbbr}`;
 
-      // Live game
-      if (isLiveStatus(g.status)) {
-        anyLive = true;
-        // Figure out game number — existing finals + 1
-        const gameNum = nextGameNumber(series);
-        // Compose live status string using SERIES structure's home/away ordering
-        // (display order: away team first)
-        const seriesHomeAbbr = getTeam(series.home).abbr;
-        const seriesAwayAbbr = getTeam(series.away).abbr;
-        // Score for series.home and series.away regardless of API home/away
-        const scoreForSeriesHome = (apiHomeName === series.home) ? hs : as;
-        const scoreForSeriesAway = (apiHomeName === series.home) ? as : hs;
-        const clockStr = (g.time && g.time !== 'Final') ? `${g.status} ${g.time}` : g.status;
-        const newStatus = `LIVE · G${gameNum} · ${seriesAwayAbbr} ${scoreForSeriesAway} · ${seriesHomeAbbr} ${scoreForSeriesHome} (${clockStr})`;
-        if (series.status !== newStatus) {
-          series.status = newStatus;
-          mutated = true;
-        }
-      }
-      // Final game — append to games[] if not already present
-      else if (isFinalStatus(g.status)) {
-        const gameDate = g.date; // "YYYY-MM-DD"
-        const alreadyLogged = (series.games || []).some(ge =>
-          ge.date === gameDate &&
-          ((apiHomeName === series.home ? ge.hs : ge.as) === hs)
-        );
-        if (alreadyLogged) {
-          // Already captured this game. Still, if the series status currently
-          // says LIVE (from a previous poll), clear it.
-          if (series.status.startsWith('LIVE')) {
-            series.status = computeSeriesStatus(series);
-            mutated = true;
+        // Build a game object matching the shape our renderers expect
+        const gameObj = {
+          id: gameId,
+          date: lb.date,
+          status: lb.status,
+          period: lb.period,
+          time: lb.time,
+          postseason: lb.postseason,
+          home_team_score: lb.home_team_score,
+          visitor_team_score: lb.visitor_team_score,
+          home_q1: lb.home_team?.q1 ?? lb.home_q1,
+          home_q2: lb.home_team?.q2 ?? lb.home_q2,
+          home_q3: lb.home_team?.q3 ?? lb.home_q3,
+          home_q4: lb.home_team?.q4 ?? lb.home_q4,
+          home_ot1: lb.home_team?.ot1 ?? lb.home_ot1,
+          visitor_q1: lb.visitor_team?.q1 ?? lb.visitor_q1,
+          visitor_q2: lb.visitor_team?.q2 ?? lb.visitor_q2,
+          visitor_q3: lb.visitor_team?.q3 ?? lb.visitor_q3,
+          visitor_q4: lb.visitor_team?.q4 ?? lb.visitor_q4,
+          visitor_ot1: lb.visitor_team?.ot1 ?? lb.visitor_ot1,
+          home_team: lb.home_team,
+          visitor_team: lb.visitor_team
+        };
+
+        // Flatten embedded players into stat rows (match the /stats shape)
+        const homePlayers = (lb.home_team?.players || []).map(p => ({
+          ...p,
+          team: { abbreviation: homeAbbr, id: lb.home_team.id, name: lb.home_team.name, city: lb.home_team.city }
+        }));
+        const awayPlayers = (lb.visitor_team?.players || []).map(p => ({
+          ...p,
+          team: { abbreviation: awayAbbr, id: lb.visitor_team.id, name: lb.visitor_team.name, city: lb.visitor_team.city }
+        }));
+
+        newBoxGames.push(gameObj);
+        newBoxStats[gameId] = [...awayPlayers, ...homePlayers];
+
+        if (isLiveStatus(lb.status)) anyLive = true;
+
+        // Fold into SERIES for other renders (ticker, series list, status strings)
+        const series = findSeriesByAbbrs(homeAbbr, awayAbbr);
+        if (series) {
+          const apiHomeName = ABBR_TO_NAME[homeAbbr];
+          const apiAwayName = ABBR_TO_NAME[awayAbbr];
+          const hs = lb.home_team_score ?? 0;
+          const as = lb.visitor_team_score ?? 0;
+          if (isLiveStatus(lb.status)) {
+            const gameNum = (series.games?.length || 0) + 1;
+            const seriesHomeAbbr = getTeam(series.home).abbr;
+            const seriesAwayAbbr = getTeam(series.away).abbr;
+            const scoreForSeriesHome = (apiHomeName === series.home) ? hs : as;
+            const scoreForSeriesAway = (apiHomeName === series.home) ? as : hs;
+            const clockStr = (lb.time && lb.time !== 'Final' && lb.time !== ' ') ? `${lb.status} ${lb.time}` : lb.status;
+            const newStatus = `LIVE · G${gameNum} · ${seriesAwayAbbr} ${scoreForSeriesAway} · ${seriesHomeAbbr} ${scoreForSeriesHome} (${clockStr})`;
+            if (series.status !== newStatus) {
+              series.status = newStatus;
+              mutated = true;
+            }
+          } else if (isFinalStatus(lb.status)) {
+            const gameDate = lb.date;
+            const alreadyLogged = (series.games || []).some(ge =>
+              ge.date === gameDate &&
+              ((apiHomeName === series.home ? ge.hs : ge.as) === hs)
+            );
+            if (alreadyLogged) {
+              if (series.status.startsWith('LIVE')) {
+                series.status = computeSeriesStatus(series);
+                mutated = true;
+              }
+            } else {
+              const winnerName = hs > as ? apiHomeName : apiAwayName;
+              const seriesHomeScore = (apiHomeName === series.home) ? hs : as;
+              const seriesAwayScore = (apiHomeName === series.home) ? as : hs;
+              series.games = series.games || [];
+              series.games.push({
+                g: (series.games?.length || 0) + 1,
+                date: gameDate,
+                hs: seriesHomeScore,
+                as: seriesAwayScore,
+                winner: winnerName
+              });
+              series.games.sort((a, b) => a.g - b.g);
+              series.status = computeSeriesStatus(series);
+              mutated = true;
+            }
           }
-          continue;
         }
-        // Determine winner by comparing scores
-        const winnerName = hs > as ? apiHomeName : apiAwayName;
-        const seriesHomeScore = (apiHomeName === series.home) ? hs : as;
-        const seriesAwayScore = (apiHomeName === series.home) ? as : hs;
-        series.games = series.games || [];
-        series.games.push({
-          g: nextGameNumber(series),
-          date: gameDate,
-          hs: seriesHomeScore,
-          as: seriesAwayScore,
-          winner: winnerName
-        });
-        // Sort by game number to be safe
-        series.games.sort((a, b) => a.g - b.g);
-        series.status = computeSeriesStatus(series);
-        mutated = true;
       }
     }
 
-    // Pick games for the box-score panel: anything live, plus anything
-    // final from today or yesterday (so stats still visible after a game ends,
-    // and yesterday's finals remain available as a fallback view).
-    const [yesterday, today] = relevantDates();
-    const newBoxGames = allGames.filter(g =>
-      isLiveStatus(g.status) ||
-      (isFinalStatus(g.status) && (g.date === today || g.date === yesterday))
-    ).filter(g =>
-      // Only show games from series we track
-      !!findSeriesByAbbrs(g.home_team?.abbreviation, g.visitor_team?.abbreviation)
-    );
+    // If no games today AND yesterday fetch succeeded, add yesterday's finals
+    // via the /games endpoint (which doesn't include player stats, so we'll
+    // need a separate /stats call per game for the box scores to populate).
+    if (newBoxGames.length === 0 && yestFetchSucceeded) {
+      for (const g of yestGames) {
+        const homeAbbr = g.home_team?.abbreviation;
+        const awayAbbr = g.visitor_team?.abbreviation;
+        if (!homeAbbr || !awayAbbr) continue;
+        if (!isFinalStatus(g.status)) continue;
+        if (!findSeriesByAbbrs(homeAbbr, awayAbbr)) continue;
+        newBoxGames.push(g);
+        // Stats for these come via fallback fetchStatsForGame calls below
+      }
+    }
+
     // Sort: live first, then most recent final
     newBoxGames.sort((a, b) => {
       const aLive = isLiveStatus(a.status), bLive = isLiveStatus(b.status);
@@ -2976,35 +3046,39 @@
       if (!aLive && bLive) return 1;
       return 0;
     });
-    // If box games list changed (different ids), we'll need to re-render
+
     const oldIds = boxGames.map(g => g.id).join(',');
     const newIds = newBoxGames.map(g => g.id).join(',');
     if (oldIds !== newIds) mutated = true;
     boxGames = newBoxGames;
 
-    // Fetch stats for LIVE games every poll (so they're fresh when you open them).
-    // For final games, fetch stats lazily when the user expands the card — this
-    // massively reduces API call volume and avoids hitting the free tier rate limit.
+    // Merge in the new stats (from live box scores) + keep any existing
+    for (const [gid, rows] of Object.entries(newBoxStats)) {
+      boxStats[gid] = rows;
+      mutated = true;
+    }
+
+    // For any boxGame without stats yet (yesterday's finals), fetch on demand
     for (const g of boxGames) {
-      if (!isLiveStatus(g.status)) continue; // lazy for finals
+      if (boxStats[g.id]) continue;
+      if (boxStatsFinalCached.has(g.id)) continue;
       const rows = await fetchStatsForGame(g.id);
       if (rows !== null) {
         boxStats[g.id] = rows;
+        if (isFinalStatus(g.status)) boxStatsFinalCached.add(g.id);
         mutated = true;
       }
     }
 
     if (mutated) {
-      // Re-render everything that reads SERIES or box state
       try { renderBoxScores(); } catch (e) { console.error('[render] renderBoxScores failed:', e); }
       try { renderSeriesList(); } catch (e) { console.error('[render] renderSeriesList failed:', e); }
       try { renderTicker(); } catch (e) { console.error('[render] renderTicker failed:', e); }
     }
-    // Always persist after a successful sync (even if nothing mutated, the
-    // cache may have been empty on this page load and we want to fill it).
     saveScorecardCache();
     return { mutated, anyLive };
   }
+
 
   // Polling orchestration: faster cadence when live games are on,
   // slow cadence otherwise.
@@ -3245,42 +3319,13 @@
 
     // Wire expand handlers
     el.querySelectorAll('.sc-row-header').forEach(header => {
-      header.addEventListener('click', async () => {
+      header.addEventListener('click', () => {
         const sid = header.dataset.series;
         const body = document.getElementById(`sc-body-${sid}`);
         const isOpen = header.classList.toggle('open');
         body.classList.toggle('open', isOpen);
-        if (!isOpen) {
-          openScorecardRows.delete(sid);
-          return;
-        }
-        openScorecardRows.add(sid);
-
-        // On expand, if stats aren't loaded for this game yet, fetch them now.
-        // This keeps API usage minimal — we only pull box score detail when
-        // someone actually wants to see it.
-        const series = SERIES.find(s => s.id === sid);
-        if (!series) return;
-        const apiGame = boxGames.find(g =>
-          findSeriesByAbbrs(g.home_team?.abbreviation, g.visitor_team?.abbreviation)?.id === sid
-        );
-        if (apiGame && !boxStats[apiGame.id]) {
-          // Already showing "Loading…" — fetch and re-render this row's body
-          try {
-            const rows = await fetchStatsForGame(apiGame.id);
-            if (rows !== null && rows.length >= 0) {
-              boxStats[apiGame.id] = rows;
-              saveScorecardCache();
-              // Re-render just this body
-              const rowData = { series, mode: 'api', apiGame, pastGame: null };
-              body.innerHTML = renderScorecardBody(rowData, today);
-              // Keep it open after re-render
-              body.classList.add('open');
-            }
-          } catch (e) {
-            console.error('[stats] on-demand fetch failed', e);
-          }
-        }
+        if (isOpen) openScorecardRows.add(sid);
+        else openScorecardRows.delete(sid);
       });
     });
   }
