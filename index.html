@@ -8081,7 +8081,22 @@
       `;
     }).join('');
 
-    container.innerHTML = sectionsHtml;
+    setStage('rendering ' + rows.length + ' games');
+    console.log('[sb] rendering', rows.length, 'rows. sectionsHtml length:', sectionsHtml.length);
+
+    // Defensive: if somehow sectionsHtml is empty, show the diagnostic instead
+    if (!sectionsHtml.trim()) {
+      container.innerHTML = `
+        <div class="sb-empty-state">
+          <div class="sb-empty-title">Render produced empty HTML</div>
+          <div class="sb-empty-sub">rows=${rows.length}, sortedDates=${JSON.stringify(sortedDates)}</div>
+        </div>
+      `;
+      return;
+    }
+
+    // Wrap in a container with a visible marker so we know the innerHTML assignment happened
+    container.innerHTML = `<div style="padding:10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.4);border-radius:6px;margin-bottom:12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#22c55e;">RENDERED ${rows.length} GAMES</div>` + sectionsHtml;
 
     // Stash the rows so the bet-slip can find them (instead of relying on
     // currentRowsRef which only holds Home's selection).
