@@ -7949,32 +7949,50 @@
     const container = document.getElementById('sbGamesList');
     if (!container) return;
 
-    // Use currentRowsRef (populated by renderScorecard) as the primary source.
     const [yesterday, today] = relevantDates();
-    let liveRows = currentRowsRef?.liveRowsToShow || [];
-    let scheduledRows = currentRowsRef?.scheduledRowsToShow || [];
+    container.innerHTML = `<div class="sb-loading">Loading games…</div>`;
 
-    // If empty, trigger the sync directly so Sportsbook tab doesn't require
-    // visiting Home first. Show loading state while we wait.
-    if (!liveRows.length && !scheduledRows.length) {
-      container.innerHTML = `<div class="sb-loading">Loading games…</div>`;
-      try {
-        console.log('[sb] no rows in ref, triggering sync');
-        await syncLiveScores();
-        // syncLiveScores populates boxGames but doesn't directly update currentRowsRef.
-        // currentRowsRef is set inside renderScorecard. Trigger that too.
-        if (typeof renderScorecard === 'function') {
-          renderScorecard();
-        }
-        liveRows = currentRowsRef?.liveRowsToShow || [];
-        scheduledRows = currentRowsRef?.scheduledRowsToShow || [];
-        console.log('[sb] after sync: live=', liveRows.length, 'scheduled=', scheduledRows.length);
-      } catch (err) {
-        console.warn('[sb] sync failed', err);
-      }
+    // Collect games from two sources:
+    // 1. boxGames (today + recent, populated by syncLiveScores)
+    // 2. direct /games fetches for next 3 days (so upcoming games appear
+    //    even if user hasn't navigated calendar)
+
+    // Run sync if boxGames is empty
+    if (!boxGames || !boxGames.length) {
+      try { await syncLiveScores(); } catch (e) { console.warn('[sb] sync failed', e); }
     }
 
-    if (!liveRows.length && !scheduledRows.length) {
+    // Build 3-day window of future dates to pull for upcoming games
+    const futureDates = [today, shiftDateStr(today, 1), shiftDateStr(today, 2), shiftDateStr(today, 3)];
+    const futureFetches = await Promise.all(
+      futureDates.map(d => fetchGamesForDate(d).catch(() => []))
+    );
+
+    // Collect all candidate games, dedupe by id, map to series we track.
+    const candidates = [];
+    (boxGames || []).forEach(g => candidates.push(g));
+    futureFetches.forEach(arr => (arr || []).forEach(g => candidates.push(g)));
+
+    const seenIds = new Set();
+    const rows = [];
+    candidates.forEach(g => {
+      if (!g) return;
+      // Dedupe: prefer numeric id, else synthetic
+      const key = String(g.id || `${g.date}-${g.visitor_team?.abbreviation}@${g.home_team?.abbreviation}`);
+      if (seenIds.has(key)) return;
+      seenIds.add(key);
+      const home = g.home_team?.abbreviation;
+      const away = g.visitor_team?.abbreviation;
+      const series = findSeriesByAbbrs(home, away);
+      if (!series) return; // not in our pool
+      // Skip finished games entirely — sportsbook shows only betable games
+      if (isFinalStatus(g.status)) return;
+      rows.push({ series, apiGame: g, mode: 'api', pastGame: null });
+    });
+
+    console.log('[sb] collected', rows.length, 'betable games');
+
+    if (!rows.length) {
       container.innerHTML = `
         <div class="sb-empty-state">
           <div class="sb-empty-title">No games right now</div>
@@ -7984,19 +8002,31 @@
       return;
     }
 
-    // Group by viewing-date (today, tomorrow, etc.)
-    const all = [...liveRows, ...scheduledRows];
+    // Sort: live first, then by date/time ascending
+    rows.sort((a, b) => {
+      const aLive = isLiveStatus(a.apiGame.status) ? 0 : 1;
+      const bLive = isLiveStatus(b.apiGame.status) ? 0 : 1;
+      if (aLive !== bLive) return aLive - bLive;
+      const aKey = (a.apiGame.date || '') + '|' + (a.apiGame.datetime || a.apiGame.status || '');
+      const bKey = (b.apiGame.date || '') + '|' + (b.apiGame.datetime || b.apiGame.status || '');
+      return aKey.localeCompare(bKey);
+    });
+
+    // Group by viewing-date
     const byDate = {};
-    all.forEach(r => {
+    rows.forEach(r => {
       const d = r.apiGame?.date || today;
       (byDate[d] = byDate[d] || []).push(r);
     });
     const sortedDates = Object.keys(byDate).sort();
 
     const sectionsHtml = sortedDates.map(d => {
-      const rows = byDate[d];
-      const label = d === today ? 'Tonight' : dayLabel(d);
-      const cardsHtml = rows.map(r => renderSbGameCard(r, today)).join('');
+      const groupRows = byDate[d];
+      let label;
+      if (d === today) label = 'Tonight';
+      else if (d === shiftDateStr(today, 1)) label = 'Tomorrow';
+      else label = dayLabel(d);
+      const cardsHtml = groupRows.map(r => renderSbGameCard(r, today)).join('');
       return `
         <div class="sb-game-group">
           <div class="sb-game-group-label">${label}</div>
@@ -8007,6 +8037,10 @@
 
     container.innerHTML = sectionsHtml;
 
+    // Stash the rows so the bet-slip can find them (instead of relying on
+    // currentRowsRef which only holds Home's selection).
+    sbRows = rows;
+
     // Wire expand handlers for each card
     container.querySelectorAll('.sb-game-card-head').forEach(headEl => {
       headEl.addEventListener('click', async (e) => {
@@ -8015,19 +8049,14 @@
         const wasExpanded = card.classList.contains('expanded');
         card.classList.toggle('expanded');
         sbGameExpanded[gameId] = !wasExpanded;
-        if (wasExpanded) return; // just collapsed — no fetch needed
-        // Load props (reuse existing flow)
-        const rowData = [...(currentRowsRef?.liveRowsToShow || []),
-                         ...(currentRowsRef?.scheduledRowsToShow || [])]
-          .find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
+        if (wasExpanded) return;
+        const rowData = sbRows.find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
         if (!rowData) return;
         const g = rowData.apiGame;
         const bodyEl = card.querySelector('.sb-game-card-body');
         if (!bodyEl) return;
-        // If props already cached, render immediately
         if (boxPlayerProps[g.id]) {
           bodyEl.innerHTML = renderPropsTable(g, rowData.series, boxPlayerProps[g.id], boxStats[g.id]);
-          // Ensure names + season avgs available
           const cachedIds = Object.keys(boxPlayerProps[g.id]);
           const needNames = cachedIds.some(id => !playerNameCache[id]);
           const needAvgs = cachedIds.some(id => !seasonAvgCache[id]);
@@ -8040,7 +8069,6 @@
           }
           return;
         }
-        // Show loading state
         bodyEl.innerHTML = `<div class="sb-loading">Loading props…</div>`;
         const realGameId = g.real_game_id || (typeof g.id === 'number' ? g.id : null);
         if (!realGameId) {
@@ -8059,6 +8087,9 @@
       });
     });
   }
+
+  // Sportsbook-owned rows (independent of Home's calendar state)
+  let sbRows = [];
 
   // Render a single game card in the Sportsbook Games list.
   function renderSbGameCard(rowData, today) {
@@ -8501,9 +8532,10 @@
       return;
     }
     // Sportsbook — open the bet slip. Find game + props.
-    const rowData = [...(currentRowsRef?.liveRowsToShow || []),
+    const rowData = (sbRows || []).find(r => r.apiGame && String(r.apiGame.id) === String(gameId))
+                 || [...(currentRowsRef?.liveRowsToShow || []),
                      ...(currentRowsRef?.scheduledRowsToShow || [])]
-      .find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
+                      .find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
     if (!rowData) return;
     const g = rowData.apiGame;
     // Bets lock once game is live
