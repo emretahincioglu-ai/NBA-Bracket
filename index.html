@@ -3109,28 +3109,26 @@
       return;
     }
 
-    // Separate live vs finals for visual hierarchy
-    const liveRows = rows.filter(r => isLiveStatus(r.apiGame.status));
-    const finalRows = rows.filter(r => isFinalStatus(r.apiGame.status));
-    const otherRows = rows.filter(r => !isLiveStatus(r.apiGame.status) && !isFinalStatus(r.apiGame.status));
+    // Use the already-deduped rows from above. When a fallback was triggered,
+    // rows contains yestFinalRows; otherwise it's liveRows + todayFinalRows.
+    const liveRowsToShow = usingFallback ? [] : liveRows;
+    const finalRowsToShow = usingFallback ? yestFinalRows : todayFinalRows;
 
-    const liveHtml = liveRows.map(r => renderHeroScorecard(r, today)).join('');
-    const finalHtml = finalRows.map(r => renderCompactScorecard(r, today)).join('');
-    const otherHtml = otherRows.map(r => renderCompactScorecard(r, today)).join('');
+    const liveHtml = liveRowsToShow.map(r => renderHeroScorecard(r, today)).join('');
+    const finalHtml = finalRowsToShow.map(r => renderCompactScorecard(r, today)).join('');
 
     el.innerHTML = `
       <div class="scorecard">
         <div class="scorecard-head">
           <div class="scorecard-title">
-            ${liveRows.length ? '<span class="live-dot"></span> Live Tonight' : (usingFallback ? 'Last Night' : 'Tonight')}
+            ${liveRowsToShow.length ? '<span class="live-dot"></span> Live Tonight' : (usingFallback ? 'Last Night' : 'Tonight')}
           </div>
           <div class="scorecard-sub">
-            ${liveRows.length ? `${liveRows.length} in progress` : ''}${liveRows.length && finalRows.length ? ' · ' : ''}${finalRows.length ? `${finalRows.length} final` : ''}
+            ${liveRowsToShow.length ? `${liveRowsToShow.length} in progress` : ''}${liveRowsToShow.length && finalRowsToShow.length ? ' · ' : ''}${finalRowsToShow.length ? `${finalRowsToShow.length} final` : ''}
           </div>
         </div>
         ${liveHtml}
         ${finalHtml}
-        ${otherHtml}
       </div>
     `;
 
