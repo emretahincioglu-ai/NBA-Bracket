@@ -2901,9 +2901,9 @@
 
     if (mutated) {
       // Re-render everything that reads SERIES or box state
-      try { renderBoxScores(); } catch (e) {}
-      try { renderSeriesList(); } catch (e) {}
-      try { renderTicker(); } catch (e) {}
+      try { renderBoxScores(); } catch (e) { console.error('[render] renderBoxScores failed:', e); }
+      try { renderSeriesList(); } catch (e) { console.error('[render] renderSeriesList failed:', e); }
+      try { renderTicker(); } catch (e) { console.error('[render] renderTicker failed:', e); }
     }
     return { mutated, anyLive };
   }
@@ -4105,19 +4105,36 @@
       if (btn) btn.click();
     }
 
-    allBrackets = await fetchBrackets();
-    results = await fetchResults();
+    // Fetch with defensive fallbacks so one broken network call doesn't
+    // leave the whole page in a half-rendered state.
+    try {
+      allBrackets = await fetchBrackets();
+    } catch (e) {
+      console.error('[init] fetchBrackets failed:', e);
+      allBrackets = [];
+    }
+    try {
+      results = await fetchResults();
+    } catch (e) {
+      console.error('[init] fetchResults failed:', e);
+      results = {};
+    }
 
-    // Locked-state home
-    renderStatusBar();
-    renderBoxScores();
-    renderStanding();
-    renderBracketHealth();
-    renderChamps();
-    renderGamesNew();
+    // Each render is independently guarded — a crash in one shouldn't blank the rest.
+    const safeRender = (fn, name) => {
+      try { fn(); }
+      catch (e) { console.error(`[init] ${name} failed:`, e); }
+    };
+    safeRender(renderStatusBar, 'renderStatusBar');
+    safeRender(renderBoxScores, 'renderBoxScores');
+    safeRender(renderStanding, 'renderStanding');
+    safeRender(renderBracketHealth, 'renderBracketHealth');
+    safeRender(renderChamps, 'renderChamps');
+    safeRender(renderGamesNew, 'renderGamesNew');
 
     // Start polling BallDontLie for live scores + finished games
-    startLivePolling();
+    try { startLivePolling(); }
+    catch (e) { console.error('[init] startLivePolling failed:', e); }
   })();
 </script>
 </body>
