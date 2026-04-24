@@ -7950,7 +7950,12 @@
     if (!container) return;
 
     const [yesterday, today] = relevantDates();
-    container.innerHTML = `<div class="sb-loading">Loading games…</div>`;
+    container.innerHTML = `<div class="sb-loading">Loading games… <span id="sbLoadStage">starting</span></div>`;
+    const setStage = (s) => {
+      const el = document.getElementById('sbLoadStage');
+      if (el) el.textContent = s;
+      console.log('[sb] stage:', s);
+    };
 
     // Collect games from two sources:
     // 1. boxGames (today + recent, populated by syncLiveScores)
@@ -7959,14 +7964,26 @@
 
     // Run sync if boxGames is empty
     if (!boxGames || !boxGames.length) {
-      try { await syncLiveScores(); } catch (e) { console.warn('[sb] sync failed', e); }
+      setStage('syncing live scores');
+      try {
+        await Promise.race([
+          syncLiveScores(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('sync timeout')), 8000))
+        ]);
+      } catch (e) { console.warn('[sb] sync failed', e); }
     }
 
     // Build 3-day window of future dates to pull for upcoming games
+    setStage('fetching upcoming games');
     const futureDates = [today, shiftDateStr(today, 1), shiftDateStr(today, 2), shiftDateStr(today, 3)];
+    const withTimeout = (p, ms) => Promise.race([
+      p,
+      new Promise((resolve) => setTimeout(() => resolve([]), ms))
+    ]);
     const futureFetches = await Promise.all(
-      futureDates.map(d => fetchGamesForDate(d).catch(() => []))
+      futureDates.map(d => withTimeout(fetchGamesForDate(d).catch(() => []), 8000))
     );
+    setStage('processing');
 
     // Collect all candidate games, dedupe by id, map to series we track.
     const candidates = [];
