@@ -464,23 +464,42 @@
     border-bottom: 1px solid var(--line-soft);
     background: var(--bg-2);
   }
-  .sp-player-row:first-child {
+  .sp-player-row:first-of-type {
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
   }
-  .sp-player-row:last-child {
+  .sp-player-row:last-of-type {
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
-    border-bottom: 1px solid var(--line-soft);
   }
   .sp-top {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     gap: 10px;
     margin-bottom: 6px;
   }
+  .sp-logo {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--tc) 18%, transparent);
+    color: var(--tc);
+    border: 1.5px solid color-mix(in srgb, var(--tc) 45%, transparent);
+    letter-spacing: 0.03em;
+  }
   .sp-name-block { min-width: 0; flex: 1 1 auto; }
+  .sp-line-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+  }
   .sp-name {
     font-family: 'Inter', sans-serif;
     font-size: 14px;
@@ -602,6 +621,29 @@
     color: var(--accent-bright);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* See more button under top-5 player list */
+  .sp-see-more {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(196, 178, 152, 0.06);
+    border: 1px solid rgba(196, 178, 152, 0.22);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-bright);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .sp-see-more:hover {
+    background: rgba(196, 178, 152, 0.14);
+    color: var(--ink);
   }
 
   /* Games list */
@@ -8451,29 +8493,30 @@
 
       const buildTeamRow = (team, isAwaySide) => {
         let spreadLine = null, spreadOdds = null, ml = null, total = null, totalSide = null;
-        let overOrUnderOdds = null;
+        let totalOdds = null;
         if (o) {
           const isApiHome = (team.abbr === apiHomeAbbr);
           if (isApiHome) {
-            spreadLine = o.spread_home;
+            spreadLine = o.spread_home_value;
             spreadOdds = o.spread_home_odds;
-            ml = o.home_ml;
-            total = o.total;
+            ml = o.moneyline_home_odds;
+            total = o.total_value;
             totalSide = 'O';
-            overOrUnderOdds = o.over_odds;
+            totalOdds = o.total_over_odds;
           } else {
-            spreadLine = o.spread_away;
+            spreadLine = o.spread_away_value;
             spreadOdds = o.spread_away_odds;
-            ml = o.away_ml;
-            total = o.total;
+            ml = o.moneyline_away_odds;
+            total = o.total_value;
             totalSide = 'U';
-            overOrUnderOdds = o.under_odds;
+            totalOdds = o.total_under_odds;
           }
         }
         const spreadDec = americanToDecimal(spreadOdds);
         const mlDec = americanToDecimal(ml);
-        const totalDec = americanToDecimal(overOrUnderOdds);
-        const spreadStr = spreadLine != null ? (spreadLine > 0 ? `+${spreadLine}` : `${spreadLine}`) : null;
+        const totalDec = americanToDecimal(totalOdds);
+        const spreadNum = spreadLine != null ? Number(spreadLine) : null;
+        const spreadStr = spreadNum != null ? (spreadNum > 0 ? `+${spreadNum}` : `${spreadNum}`) : null;
 
         return `
           <div class="gl-row">
@@ -8481,7 +8524,7 @@
               <span class="gl-team-abbr">${escapeHtml(team.abbr)}</span>
               <span>${escapeHtml((team.name || '').split(' ').pop() || team.abbr)}</span>
             </div>
-            <div class="gl-cell ${spreadLine == null ? 'empty' : ''}" data-sel='${spreadLine != null ? escapeHtml(JSON.stringify({kind:'spread',gameId:g.id,side:team.abbr,line:spreadLine,odds:spreadOdds})) : ''}'>
+            <div class="gl-cell ${spreadNum == null ? 'empty' : ''}" data-sel='${spreadNum != null ? escapeHtml(JSON.stringify({kind:'spread',gameId:g.id,side:team.abbr,line:spreadNum,odds:spreadOdds})) : ''}'>
               <div class="gl-cell-line">${spreadStr != null ? escapeHtml(spreadStr) : '—'}</div>
               <div class="gl-cell-odds">${spreadDec != null ? spreadDec.toFixed(2) : '—'}</div>
             </div>
@@ -8489,7 +8532,7 @@
               <div class="gl-cell-line">&nbsp;</div>
               <div class="gl-cell-odds">${mlDec != null ? mlDec.toFixed(2) : '—'}</div>
             </div>
-            <div class="gl-cell ${total == null ? 'empty' : ''}" data-sel='${total != null ? escapeHtml(JSON.stringify({kind:'total',gameId:g.id,side:totalSide,line:total,odds:overOrUnderOdds})) : ''}'>
+            <div class="gl-cell ${total == null ? 'empty' : ''}" data-sel='${total != null ? escapeHtml(JSON.stringify({kind:'total',gameId:g.id,side:totalSide,line:Number(total),odds:totalOdds})) : ''}'>
               <div class="gl-cell-line">${total != null ? totalSide + ' ' + total : '—'}</div>
               <div class="gl-cell-odds">${totalDec != null ? totalDec.toFixed(2) : '—'}</div>
             </div>
@@ -8558,6 +8601,10 @@
     renderStatPillBody(container, propType, statKey, propLabel);
   }
 
+  // Track which game groups are "expanded" (showing all players instead of top 5)
+  // Key: `${gameId}:${propType}` → true if expanded
+  const sbGroupExpanded = {};
+
   function renderStatPillBody(container, propType, statKey, propLabel) {
     const groups = sbRows.map(r => {
       const g = r.apiGame;
@@ -8573,7 +8620,22 @@
       const homeT = getTeam(series.home);
       const awayT = getTeam(series.away);
       const timeStr = formatSbTipoff(g);
-      const playerRows = eligible.map(pid => renderStatPlayerRow(pid, g.id, propType, statKey, propLabel)).join('');
+
+      const expandKey = `${g.id}:${propType}`;
+      const isExpanded = !!sbGroupExpanded[expandKey];
+      const TOP_N = 5;
+      const visible = isExpanded ? eligible : eligible.slice(0, TOP_N);
+      const hasMore = eligible.length > TOP_N;
+
+      const playerRows = visible.map(pid => renderStatPlayerRow(pid, g.id, propType, statKey, propLabel)).join('');
+
+      const seeMoreBtn = hasMore ? `
+        <button class="sp-see-more" type="button" data-expand-key="${escapeHtml(expandKey)}">
+          ${isExpanded
+            ? `Show Less ▲`
+            : `See All ${eligible.length} Players ▼`}
+        </button>
+      ` : '';
 
       return `
         <div class="sp-game-group">
@@ -8582,6 +8644,7 @@
             <span class="sp-game-time">${escapeHtml(timeStr)}</span>
           </div>
           ${playerRows}
+          ${seeMoreBtn}
         </div>
       `;
     }).filter(Boolean).join('');
@@ -8592,6 +8655,14 @@
     }
     container.innerHTML = groups;
     wireStatPillInteractions(container);
+    // Wire "See more" buttons — toggle expanded state and re-render this pill
+    container.querySelectorAll('[data-expand-key]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.expandKey;
+        sbGroupExpanded[key] = !sbGroupExpanded[key];
+        renderStatPillBody(container, propType, statKey, propLabel);
+      });
+    });
     markStagedCells();
   }
 
@@ -8599,6 +8670,13 @@
     const meta = playerNameCache[pid] || {};
     const name = ((meta.first || '') + ' ' + (meta.last || '')).trim() || `Player ${pid}`;
     const teamAbbr = meta.teamAbbr || '';
+    // Resolve team color from TEAMS dict using abbreviation.
+    // Search by abbr since playerNameCache stores abbr not the key.
+    let teamColor = '#8a8378';
+    if (teamAbbr) {
+      const teamEntry = Object.values(TEAMS).find(t => t.abbr === teamAbbr);
+      if (teamEntry && teamEntry.tc) teamColor = teamEntry.tc;
+    }
     const avg = seasonAvgCache[pid]?.[statKey];
     const avgStr = (typeof avg === 'number') ? avg.toFixed(1) : null;
     const prop = (boxPlayerProps[gameId] || {})[pid]?.[propType];
@@ -8620,11 +8698,12 @@
     return `
       <div class="sp-player-row" data-player-id="${pid}" data-game-id="${gameId}" data-prop-type="${propType}" data-main-line="${mainLine}" data-min-line="${minLine}" data-max-line="${maxLine}" data-step="${step}" data-current-line="${currentLine}">
         <div class="sp-top">
+          <div class="sp-logo" style="--tc: ${teamColor};">${escapeHtml(teamAbbr)}</div>
           <div class="sp-name-block">
             <div class="sp-name">${escapeHtml(name)}</div>
-            <div class="sp-sub">${escapeHtml(teamAbbr)}${avgStr != null ? ` · ${avgLabels[propType]}: ${avgStr}` : ''}</div>
+            <div class="sp-sub">${avgStr != null ? `${avgLabels[propType]}: ${avgStr}` : ''}</div>
           </div>
-          <div>
+          <div class="sp-line-stack">
             <span class="sp-line-num" data-role="line-display">${currentLine}</span>
             <span class="sp-line-main-badge" style="${currentLine === mainLine ? '' : 'visibility:hidden'}" data-role="main-badge">MAIN</span>
           </div>
