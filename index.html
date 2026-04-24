@@ -302,6 +302,308 @@
     line-height: 1.5;
   }
 
+  /* ================== PILL BAR ================== */
+  .sb-pill-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0 14px;
+    margin-bottom: 6px;
+    scrollbar-width: none;
+  }
+  .sb-pill-bar::-webkit-scrollbar { display: none; }
+  .sb-pill {
+    flex: 0 0 auto;
+    padding: 9px 18px;
+    background: rgba(196, 178, 152, 0.06);
+    border: 1px solid rgba(196, 178, 152, 0.22);
+    border-radius: 22px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .sb-pill:hover {
+    color: var(--ink);
+    border-color: rgba(196, 178, 152, 0.4);
+  }
+  .sb-pill.active {
+    background: color-mix(in srgb, var(--accent) 24%, transparent);
+    border-color: var(--accent-bright);
+    color: var(--ink);
+  }
+
+  /* ================== GAME LINES PILL — spread/ML/total table ================== */
+  .gl-game {
+    background: var(--bg-2);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+  }
+  .gl-game-head {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .gl-game-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+  .gl-col-head {
+    display: grid;
+    grid-template-columns: 1fr 64px 64px 64px;
+    gap: 6px;
+    padding: 10px 0 6px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .gl-col-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.12em;
+    text-align: center;
+    font-weight: 700;
+  }
+  .gl-col-label:first-child { text-align: left; }
+  .gl-row {
+    display: grid;
+    grid-template-columns: 1fr 64px 64px 64px;
+    gap: 6px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .gl-row:last-child { border-bottom: none; }
+  .gl-team {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+  }
+  .gl-team-abbr {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+  }
+  .gl-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 2px;
+    background: rgba(196, 178, 152, 0.04);
+    border: 1px solid rgba(196, 178, 152, 0.22);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .gl-cell:hover, .gl-cell.staged {
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    border-color: var(--accent-bright);
+  }
+  .gl-cell-line {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--ink-2);
+    font-weight: 500;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .gl-cell-odds {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--accent-bright);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .gl-cell.empty { cursor: default; opacity: 0.5; }
+  .gl-cell.empty:hover {
+    background: rgba(196, 178, 152, 0.04);
+    border-color: rgba(196, 178, 152, 0.22);
+  }
+
+  /* ================== STAT PILL VIEW — slider per player ================== */
+  .sp-game-group { margin-bottom: 16px; }
+  .sp-game-head {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-bright);
+    letter-spacing: 0.02em;
+    padding: 6px 2px 8px;
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: 4px;
+  }
+  .sp-game-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    margin-left: 8px;
+  }
+  .sp-player-row {
+    padding: 10px 10px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    background: var(--bg-2);
+  }
+  .sp-player-row:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+  .sp-player-row:last-child {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .sp-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .sp-name-block { min-width: 0; flex: 1 1 auto; }
+  .sp-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+  .sp-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+  .sp-line-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    padding-left: 8px;
+  }
+  .sp-line-main-badge {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 2px 5px;
+    background: rgba(196, 178, 152, 0.14);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: var(--accent-bright);
+    font-weight: 700;
+    vertical-align: middle;
+  }
+
+  /* Slider */
+  .sp-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 10px;
+    padding: 0 2px;
+  }
+  .sp-slider-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    min-width: 24px;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+  .sp-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 4px;
+    background: rgba(196, 178, 152, 0.18);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .sp-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px; height: 20px;
+    background: var(--accent-bright);
+    border-radius: 50%;
+    border: 2px solid var(--bg-2);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+    cursor: grab;
+  }
+  .sp-slider::-moz-range-thumb {
+    width: 20px; height: 20px;
+    background: var(--accent-bright);
+    border-radius: 50%;
+    border: 2px solid var(--bg-2);
+    box-shadow: 0 0 0 1px var(--accent);
+    cursor: grab;
+  }
+  .sp-slider:active::-webkit-slider-thumb { cursor: grabbing; }
+  .sp-slider:active::-moz-range-thumb { cursor: grabbing; }
+
+  /* Over/Under cells */
+  .sp-ou-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .sp-ou {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(196, 178, 152, 0.05);
+    border: 1px solid rgba(196, 178, 152, 0.22);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    color: inherit;
+  }
+  .sp-ou:hover, .sp-ou.staged {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    border-color: var(--accent-bright);
+  }
+  .sp-ou-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+  }
+  .sp-ou.staged .sp-ou-label { color: var(--ink); }
+  .sp-ou-val {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--accent-bright);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
   /* Games list */
   .sb-games-list {
     display: flex;
@@ -448,30 +750,87 @@
     color: var(--ink-dim);
   }
 
+  /* ================== STAGING FOOTER ================== */
+  .sb-stage-footer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 99995;
+    background: linear-gradient(180deg, rgba(10,10,10,0.4), var(--bg-2));
+    border-top: 1px solid var(--accent);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+    transform: translateY(100%);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    padding-bottom: max(env(safe-area-inset-bottom), 8px);
+  }
+  .sb-stage-footer.visible { transform: translateY(0); }
+  .sb-stage-footer-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .sb-stage-count {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .sb-stage-count-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: var(--accent-bright);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .sb-stage-count-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    font-weight: 700;
+  }
+  .sb-stage-review-btn {
+    padding: 12px 20px;
+    background: linear-gradient(180deg, var(--accent-bright), var(--accent));
+    color: #0a0a0a;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.12s;
+  }
+  .sb-stage-review-btn:active { transform: translateY(1px); }
+
   /* ================== BET SLIP DRAWER ================== */
-  .bet-slip-backdrop {
+  .sb-slip-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    z-index: 99996;
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    z-index: 99997;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s;
   }
-  .bet-slip-backdrop.open {
+  .sb-slip-backdrop.open {
     opacity: 1;
     pointer-events: auto;
   }
-  .bet-slip-drawer {
+  .sb-slip-drawer {
     position: fixed;
     left: 0; right: 0; bottom: 0;
-    z-index: 99998;
+    z-index: 99997;
     background: var(--bg-2);
     border-top: 1px solid var(--line);
     border-radius: 16px 16px 0 0;
-    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 -20px 60px rgba(0,0,0,0.7);
     max-height: 88vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -479,149 +838,160 @@
     transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
     padding-bottom: max(env(safe-area-inset-bottom), 20px);
   }
-  .bet-slip-drawer.open {
-    transform: translateY(0);
-  }
-  .bet-slip-handle {
+  .sb-slip-drawer.open { transform: translateY(0); }
+  .sb-slip-handle {
     width: 40px; height: 4px;
     background: var(--line);
     border-radius: 2px;
     margin: 10px auto 4px;
   }
-  .bet-slip-head {
-    padding: 8px 18px 14px;
-    border-bottom: 1px solid var(--line-soft);
+  .sb-slip-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
+    padding: 8px 18px 12px;
+    border-bottom: 1px solid var(--line-soft);
   }
-  .bet-slip-player {
-    font-family: 'Inter', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
+  .sb-slip-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
     color: var(--ink);
-    line-height: 1.2;
+    letter-spacing: 0.02em;
+    line-height: 1;
   }
-  .bet-slip-sub {
-    margin-top: 3px;
+  .sb-slip-subtitle {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.12em;
-    color: var(--ink-dim);
+    color: var(--accent);
+    margin-top: 4px;
     text-transform: uppercase;
   }
-  .bet-slip-close {
+  .sb-slip-close {
     width: 32px; height: 32px;
     border-radius: 50%;
-    background: rgba(196, 178, 152, 0.08);
-    border: 1px solid rgba(196, 178, 152, 0.2);
-    color: var(--ink-2);
-    font-size: 18px;
+    background: rgba(196,178,152,0.1);
+    border: 1px solid rgba(196,178,152,0.25);
+    color: var(--ink);
+    font-size: 20px;
     line-height: 1;
     cursor: pointer;
     font-family: inherit;
     padding: 0;
     flex-shrink: 0;
   }
-  .bet-slip-close:hover { background: rgba(196, 178, 152, 0.16); }
-
-  /* Line selector — horizontal row of 5 tabs */
-  .bet-slip-section {
-    padding: 16px 18px 14px;
+  .sb-slip-empty {
+    padding: 40px 24px;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+  .sb-slip-legs {
+    padding: 6px 16px;
+  }
+  .sb-slip-leg {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
     border-bottom: 1px solid var(--line-soft);
   }
-  .bet-slip-label {
+  .sb-slip-leg:last-child { border-bottom: none; }
+  .sb-slip-leg-info { min-width: 0; flex: 1; }
+  .sb-slip-leg-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .sb-slip-leg-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+  }
+  .sb-slip-leg-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .sb-slip-leg-odds {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--accent-bright);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .sb-slip-leg-remove {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(196,178,152,0.08);
+    border: 1px solid rgba(196,178,152,0.2);
+    color: var(--ink-dim);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+  }
+  .sb-slip-leg-remove:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+
+  .sb-slip-combined {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 16px;
+    margin: 0 16px;
+    background: rgba(196,178,152,0.05);
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+  }
+  .sb-slip-combined-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.15em;
     color: var(--ink-dim);
     font-weight: 700;
-    margin-bottom: 10px;
   }
-  .bet-slip-lines {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-  }
-  .bet-slip-line-btn {
-    padding: 10px 4px;
-    background: rgba(196, 178, 152, 0.04);
-    border: 1px solid rgba(196, 178, 152, 0.22);
-    border-radius: 6px;
+  .sb-slip-combined-val {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    color: var(--ink-2);
-    cursor: pointer;
-    text-align: center;
-    line-height: 1;
-    transition: all 0.15s;
-    font-variant-numeric: tabular-nums;
-  }
-  .bet-slip-line-btn.main {
-    border-color: rgba(196, 178, 152, 0.5);
-    font-weight: 700;
-  }
-  .bet-slip-line-btn.active {
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
-    border-color: var(--accent-bright);
-    color: var(--ink);
-    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
-  }
-
-  /* Over / Under side selector */
-  .bet-slip-sides {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .bet-slip-side-btn {
-    padding: 14px 12px;
-    background: rgba(196, 178, 152, 0.04);
-    border: 1px solid rgba(196, 178, 152, 0.22);
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    font-family: inherit;
-    color: var(--ink);
-    transition: all 0.15s;
-  }
-  .bet-slip-side-btn .bss-label {
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--ink-2);
-    text-transform: uppercase;
-  }
-  .bet-slip-side-btn .bss-odds {
-    font-family: 'Inter', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 24px;
     color: var(--accent-bright);
+    line-height: 1;
     font-variant-numeric: tabular-nums;
   }
-  .bet-slip-side-btn.active {
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
-    border-color: var(--accent-bright);
-  }
-  .bet-slip-side-btn.active .bss-label { color: var(--ink); }
 
-  /* Stake input + chips */
-  .bet-slip-stake {
+  .sb-slip-stake-section {
+    padding: 14px 18px 8px;
+  }
+  .sb-slip-stake-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .sb-slip-stake-row {
     display: flex;
     align-items: stretch;
     gap: 8px;
     margin-bottom: 10px;
   }
-  .bet-slip-stake input {
+  .sb-slip-stake-row input {
     flex: 1;
     padding: 14px 16px;
-    background: rgba(10, 10, 10, 0.6);
-    border: 1px solid rgba(196, 178, 152, 0.3);
+    background: rgba(10,10,10,0.6);
+    border: 1px solid rgba(196,178,152,0.3);
     border-radius: 8px;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 24px;
@@ -631,70 +1001,76 @@
     outline: none;
     min-width: 0;
   }
-  .bet-slip-stake input:focus {
+  .sb-slip-stake-row input:focus {
     border-color: var(--accent-bright);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
   }
-  .bet-slip-stake-unit {
+  .sb-slip-stake-unit {
     display: flex;
     align-items: center;
-    padding: 0 4px;
+    padding: 0 6px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.15em;
     color: var(--ink-dim);
-    text-transform: uppercase;
   }
-  .bet-slip-chips {
+  .sb-slip-chips {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
   }
-  .bet-slip-chip {
+  .sb-slip-chip {
     padding: 8px 4px;
-    background: rgba(196, 178, 152, 0.06);
-    border: 1px solid rgba(196, 178, 152, 0.22);
+    background: rgba(196,178,152,0.06);
+    border: 1px solid rgba(196,178,152,0.22);
     border-radius: 5px;
     font-family: 'Inter', sans-serif;
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: 0.04em;
     color: var(--ink-2);
     cursor: pointer;
-    transition: all 0.12s;
   }
-  .bet-slip-chip:hover {
-    background: rgba(196, 178, 152, 0.14);
+  .sb-slip-chip:hover {
+    background: rgba(196,178,152,0.14);
     color: var(--ink);
   }
 
-  /* Payout preview */
-  .bet-slip-payout {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
+  .sb-slip-payout {
     padding: 14px 18px;
-    background: rgba(196, 178, 152, 0.04);
+    background: rgba(196,178,152,0.04);
     border-top: 1px solid var(--line-soft);
     border-bottom: 1px solid var(--line-soft);
   }
-  .bet-slip-payout-label {
+  .sb-slip-payout-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .sb-slip-payout-row.sub { margin-top: 4px; }
+  .sb-slip-payout-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.15em;
     color: var(--ink-dim);
     font-weight: 700;
   }
-  .bet-slip-payout-val {
+  .sb-slip-payout-val {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
+    font-size: 24px;
     color: var(--accent-bright);
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }
+  .sb-slip-payout-sub-val {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--ok);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
 
-  /* Submit */
-  .bet-slip-submit {
+  .sb-slip-submit {
     display: block;
     width: calc(100% - 36px);
     margin: 16px 18px 0;
@@ -704,35 +1080,44 @@
     border: none;
     border-radius: 10px;
     font-family: 'Inter', sans-serif;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     cursor: pointer;
     transition: transform 0.12s, opacity 0.2s;
   }
-  .bet-slip-submit:hover {
-    transform: translateY(-1px);
-  }
-  .bet-slip-submit:disabled {
+  .sb-slip-submit:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-    transform: none;
   }
-  .bet-slip-err {
-    color: var(--danger);
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    padding: 8px 18px 0;
-    text-align: center;
+  .sb-slip-submit:active:not(:disabled) {
+    transform: translateY(1px);
   }
 
-  @media (max-width: 560px) {
-    .bet-slip-line-btn { font-size: 16px; padding: 9px 3px; }
-    .bet-slip-side-btn { padding: 12px 10px; }
-    .bet-slip-side-btn .bss-odds { font-size: 16px; }
-    .bet-slip-stake input { font-size: 20px; padding: 12px 14px; }
-    .sb-game-card-team { font-size: 14px; }
+  /* Toast */
+  .sb-toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ok);
+    color: #0a0a0a;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  .sb-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 
   /* HERO SECTION */
@@ -4267,6 +4652,15 @@
 
     <!-- Games sub-view -->
     <div class="sb-subview active" id="sb-games">
+      <div class="sb-pill-bar" id="sbPillBar">
+        <button class="sb-pill active" data-sb-pill="gamelines">Game Lines</button>
+        <button class="sb-pill" data-sb-pill="points">Points</button>
+        <button class="sb-pill" data-sb-pill="threes">Threes</button>
+        <button class="sb-pill" data-sb-pill="rebounds">Rebounds</button>
+        <button class="sb-pill" data-sb-pill="assists">Assists</button>
+        <button class="sb-pill" data-sb-pill="blocks">Blocks</button>
+        <button class="sb-pill" data-sb-pill="steals">Steals</button>
+      </div>
       <div id="sbGamesList" class="sb-games-list"></div>
     </div>
 
@@ -7942,173 +8336,415 @@
   }
 
   // ================== SPORTSBOOK GAMES LIST ==================
-  // Gathers tonight + next-few-days of scheduled+live games into a flat
-  // list, grouped by date. Reuses boxGames + fetchGamesForDate data.
   const sbGameExpanded = {}; // gameId → true if expanded
-  async function renderSportsbookGames() {
-    const container = document.getElementById('sbGamesList');
-    if (!container) return;
 
-    // Dead-simple render: one card per pool matchup, using only the
-    // static SERIES array. No async, no API, no filtering. If this still
-    // doesn't render, the problem is environmental (not in this code).
-    try {
-      const cardsHtml = SERIES.map(s => {
-        const homeT = getTeam(s.home);
-        const awayT = getTeam(s.away);
-        const homeLabel = (homeT.name || s.home || '').split(' ').pop() || s.home;
-        const awayLabel = (awayT.name || s.away || '').split(' ').pop() || s.away;
-        return `
-          <div class="sb-game-card" data-series-id="${s.id}">
-            <button class="sb-game-card-head" type="button" onclick="window.__sbToggleSeriesCard('${s.id}')">
-              <div class="sb-game-card-teams">
-                <span class="sb-game-card-team">${escapeHtml(awayT.abbr)} ${escapeHtml(awayLabel)}</span>
-                <span class="sb-game-card-at">@</span>
-                <span class="sb-game-card-team">${escapeHtml(homeT.abbr)} ${escapeHtml(homeLabel)}</span>
-              </div>
-              <div class="sb-game-card-right">
-                <span class="sb-game-card-tipoff">${escapeHtml(s.status || '')}</span>
-                <span class="sb-game-card-chev">›</span>
-              </div>
-            </button>
-            <div class="sb-game-card-body" id="sb-body-${s.id}"></div>
-          </div>
-        `;
-      }).join('');
-
-      container.innerHTML = `
-        <div class="sb-game-group">
-          <div class="sb-game-group-label">Active Series</div>
-          ${cardsHtml}
-        </div>
-      `;
-      console.log('[sb] rendered', SERIES.length, 'series cards');
-    } catch (err) {
-      console.error('[sb] fatal render error', err);
-      container.innerHTML = `
-        <div class="sb-empty-state">
-          <div class="sb-empty-title">Render failed</div>
-          <div class="sb-empty-sub" style="color:var(--danger);font-family:monospace;">${escapeHtml(err?.message || String(err))}</div>
-        </div>
-      `;
-    }
-  }
-
-  // Toggle a series card — on expand, look up next game for this series
-  // and load props if a tipoff is available.
-  window.__sbToggleSeriesCard = async function(seriesId) {
-    const card = document.querySelector(`.sb-game-card[data-series-id="${seriesId}"]`);
-    if (!card) return;
-    const wasExpanded = card.classList.contains('expanded');
-    card.classList.toggle('expanded');
-    if (wasExpanded) return;
-
-    const bodyEl = card.querySelector('.sb-game-card-body');
-    if (!bodyEl) return;
-
-    const series = SERIES.find(s => s.id === seriesId);
-    if (!series) return;
-
-    // Find the next upcoming game for this series from boxGames / future fetches
-    const [yesterday, today] = relevantDates();
-    const homeAbbr = getTeam(series.home).abbr;
-    const awayAbbr = getTeam(series.away).abbr;
-
-    bodyEl.innerHTML = `<div class="sb-loading">Loading props…</div>`;
-
-    // Pull games for next 3 days and find one matching this series
-    let matchingGame = null;
-    const datesToCheck = [today, shiftDateStr(today, 1), shiftDateStr(today, 2), shiftDateStr(today, 3)];
-    for (const d of datesToCheck) {
-      const games = await fetchGamesForDate(d).catch(() => []);
-      const match = (games || []).find(g => {
-        const h = g.home_team?.abbreviation;
-        const a = g.visitor_team?.abbreviation;
-        return (h === homeAbbr && a === awayAbbr) || (h === awayAbbr && a === homeAbbr);
-      });
-      if (match && !isFinalStatus(match.status)) {
-        matchingGame = match;
-        break;
-      }
-    }
-
-    if (!matchingGame) {
-      bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">No upcoming game for this series yet</div></div>`;
-      return;
-    }
-
-    if (isLiveStatus(matchingGame.status) || isFinalStatus(matchingGame.status)) {
-      bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">Bets locked — game is live or complete</div></div>`;
-      return;
-    }
-
-    // Stash this mapping for the bet slip
-    sbRows = sbRows.filter(r => r.series.id !== seriesId);
-    sbRows.push({ series, apiGame: matchingGame, mode: 'api', pastGame: null });
-
-    // Fetch props
-    const realGameId = typeof matchingGame.id === 'number' ? matchingGame.id : null;
-    if (!realGameId) {
-      bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">Props unavailable (no game ID)</div></div>`;
-      return;
-    }
-
-    if (!boxPlayerProps[matchingGame.id]) {
-      const props = await fetchPlayerPropsForGame(realGameId);
-      if (!props) {
-        bodyEl.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-sub">DraftKings hasn't posted props yet</div></div>`;
-        return;
-      }
-      boxPlayerProps[matchingGame.id] = props;
-      const ids = Object.keys(props);
-      await Promise.all([fetchPlayerNames(ids), fetchSeasonAvgs(ids)]);
-    }
-
-    bodyEl.innerHTML = renderPropsTable(matchingGame, series, boxPlayerProps[matchingGame.id], boxStats[matchingGame.id]);
-  };
+  // Which pill tab is active. Default: game lines.
+  let sbActivePill = 'gamelines';
 
   // Sportsbook-owned rows (independent of Home's calendar state)
   let sbRows = [];
 
-  // Render a single game card in the Sportsbook Games list.
-  function renderSbGameCard(rowData, today) {
-    const g = rowData.apiGame;
-    const series = rowData.series;
-    const homeT = getTeam(series.home);
-    const awayT = getTeam(series.away);
-    const isLive = isLiveStatus(g.status);
-    const expanded = !!sbGameExpanded[g.id];
+  // Staged betting selections. Key is a unique selection id.
+  const sbStagedSelections = {};
+  function selectionKey(sel) {
+    if (sel.kind === 'prop') {
+      return `prop:${sel.gameId}:${sel.playerId}:${sel.propType}:${sel.line}:${sel.side}`;
+    }
+    return `${sel.kind}:${sel.gameId}:${sel.side || ''}`;
+  }
 
-    // Lock status — bets locked once game goes live
-    const locked = isLive || isFinalStatus(g.status);
+  async function renderSportsbookGames() {
+    const container = document.getElementById('sbGamesList');
+    if (!container) return;
 
-    let tipoffLabel = '';
-    if (isLive) {
-      tipoffLabel = `<span class="sb-live-badge"><span class="sb-live-dot"></span>LIVE · ${escapeHtml(g.status)}</span>`;
-    } else {
-      tipoffLabel = escapeHtml(formatSbTipoff(g));
+    // Wire pill taps once
+    const pillBar = document.getElementById('sbPillBar');
+    if (pillBar && !pillBar.dataset.wired) {
+      pillBar.dataset.wired = '1';
+      document.querySelectorAll('.sb-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          const p = pill.dataset.sbPill;
+          sbActivePill = p;
+          document.querySelectorAll('.sb-pill').forEach(x => x.classList.remove('active'));
+          pill.classList.add('active');
+          renderActivePill();
+        });
+      });
     }
 
+    container.innerHTML = `<div class="sb-loading">Loading games…</div>`;
+    try {
+      await loadSbRows();
+    } catch (err) {
+      container.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-title">Load failed</div><div class="sb-empty-sub" style="color:var(--danger);font-family:monospace;">${escapeHtml(err?.message || String(err))}</div></div>`;
+      return;
+    }
+    renderActivePill();
+  }
+
+  async function loadSbRows() {
+    const [yesterday, today] = relevantDates();
+    const datesToCheck = [today, shiftDateStr(today, 1), shiftDateStr(today, 2), shiftDateStr(today, 3)];
+    const withTimeout = (p, ms) => Promise.race([
+      p, new Promise(resolve => setTimeout(() => resolve([]), ms))
+    ]);
+    const results = await Promise.all(datesToCheck.map(d =>
+      withTimeout(fetchGamesForDate(d).catch(() => []), 8000)
+    ));
+    const allGames = [];
+    results.forEach(arr => (arr || []).forEach(g => allGames.push(g)));
+
+    const newRows = [];
+    const seen = new Set();
+    SERIES.forEach(series => {
+      const homeAbbr = getTeam(series.home).abbr;
+      const awayAbbr = getTeam(series.away).abbr;
+      const match = allGames.find(g => {
+        if (isFinalStatus(g.status)) return false;
+        const h = g.home_team?.abbreviation;
+        const a = g.visitor_team?.abbreviation;
+        return (h === homeAbbr && a === awayAbbr) || (h === awayAbbr && a === homeAbbr);
+      });
+      if (match && !seen.has(match.id)) {
+        seen.add(match.id);
+        newRows.push({ series, apiGame: match, mode: 'api', pastGame: null });
+      }
+    });
+
+    newRows.sort((a, b) => {
+      const aLive = isLiveStatus(a.apiGame.status) ? 0 : 1;
+      const bLive = isLiveStatus(b.apiGame.status) ? 0 : 1;
+      if (aLive !== bLive) return aLive - bLive;
+      const aKey = (a.apiGame.date || '') + '|' + (a.apiGame.datetime || a.apiGame.status || '');
+      const bKey = (b.apiGame.date || '') + '|' + (b.apiGame.datetime || b.apiGame.status || '');
+      return aKey.localeCompare(bKey);
+    });
+
+    sbRows = newRows;
+    console.log('[sb] loadSbRows: got', sbRows.length, 'rows');
+  }
+
+  function renderActivePill() {
+    const container = document.getElementById('sbGamesList');
+    if (!container) return;
+    if (!sbRows.length) {
+      container.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-title">No games right now</div><div class="sb-empty-sub">Check back closer to tipoff</div></div>`;
+      return;
+    }
+    if (sbActivePill === 'gamelines') {
+      renderGameLinesPill(container);
+    } else {
+      renderStatPill(container, sbActivePill);
+    }
+  }
+
+  function renderGameLinesPill(container) {
+    const needFetch = sbRows.filter(r => !boxOdds[r.apiGame.id]);
+
+    const html = sbRows.map(r => {
+      const g = r.apiGame;
+      const series = r.series;
+      const homeT = getTeam(series.home);
+      const awayT = getTeam(series.away);
+      const apiHomeAbbr = g.home_team?.abbreviation;
+      const o = boxOdds[g.id];
+
+      const buildTeamRow = (team, isAwaySide) => {
+        let spreadLine = null, spreadOdds = null, ml = null, total = null, totalSide = null;
+        let overOrUnderOdds = null;
+        if (o) {
+          const isApiHome = (team.abbr === apiHomeAbbr);
+          if (isApiHome) {
+            spreadLine = o.spread_home;
+            spreadOdds = o.spread_home_odds;
+            ml = o.home_ml;
+            total = o.total;
+            totalSide = 'O';
+            overOrUnderOdds = o.over_odds;
+          } else {
+            spreadLine = o.spread_away;
+            spreadOdds = o.spread_away_odds;
+            ml = o.away_ml;
+            total = o.total;
+            totalSide = 'U';
+            overOrUnderOdds = o.under_odds;
+          }
+        }
+        const spreadDec = americanToDecimal(spreadOdds);
+        const mlDec = americanToDecimal(ml);
+        const totalDec = americanToDecimal(overOrUnderOdds);
+        const spreadStr = spreadLine != null ? (spreadLine > 0 ? `+${spreadLine}` : `${spreadLine}`) : null;
+
+        return `
+          <div class="gl-row">
+            <div class="gl-team">
+              <span class="gl-team-abbr">${escapeHtml(team.abbr)}</span>
+              <span>${escapeHtml((team.name || '').split(' ').pop() || team.abbr)}</span>
+            </div>
+            <div class="gl-cell ${spreadLine == null ? 'empty' : ''}" data-sel='${spreadLine != null ? escapeHtml(JSON.stringify({kind:'spread',gameId:g.id,side:team.abbr,line:spreadLine,odds:spreadOdds})) : ''}'>
+              <div class="gl-cell-line">${spreadStr != null ? escapeHtml(spreadStr) : '—'}</div>
+              <div class="gl-cell-odds">${spreadDec != null ? spreadDec.toFixed(2) : '—'}</div>
+            </div>
+            <div class="gl-cell ${ml == null ? 'empty' : ''}" data-sel='${ml != null ? escapeHtml(JSON.stringify({kind:'ml',gameId:g.id,side:team.abbr,odds:ml})) : ''}'>
+              <div class="gl-cell-line">&nbsp;</div>
+              <div class="gl-cell-odds">${mlDec != null ? mlDec.toFixed(2) : '—'}</div>
+            </div>
+            <div class="gl-cell ${total == null ? 'empty' : ''}" data-sel='${total != null ? escapeHtml(JSON.stringify({kind:'total',gameId:g.id,side:totalSide,line:total,odds:overOrUnderOdds})) : ''}'>
+              <div class="gl-cell-line">${total != null ? totalSide + ' ' + total : '—'}</div>
+              <div class="gl-cell-odds">${totalDec != null ? totalDec.toFixed(2) : '—'}</div>
+            </div>
+          </div>
+        `;
+      };
+
+      const awayRow = buildTeamRow(awayT, true);
+      const homeRow = buildTeamRow(homeT, false);
+      const timeStr = formatSbTipoff(g);
+
+      return `
+        <div class="gl-game" data-game-id="${g.id}">
+          <div class="gl-game-head">${escapeHtml(awayT.abbr)} ${escapeHtml((awayT.name || '').split(' ').pop())} @ ${escapeHtml(homeT.abbr)} ${escapeHtml((homeT.name || '').split(' ').pop())}</div>
+          <div class="gl-game-time">${escapeHtml(timeStr)}</div>
+          <div class="gl-col-head">
+            <span></span>
+            <span class="gl-col-label">Spread</span>
+            <span class="gl-col-label">ML</span>
+            <span class="gl-col-label">Total</span>
+          </div>
+          ${awayRow}
+          ${homeRow}
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = html;
+    wireGlCellTaps(container);
+    markStagedCells();
+
+    if (needFetch.length) {
+      Promise.all(needFetch.map(async r => {
+        try { await fetchOddsForDate(r.apiGame.date); } catch (_) {}
+      })).then(() => {
+        if (sbActivePill === 'gamelines') renderGameLinesPill(container);
+      });
+    }
+  }
+
+  function renderStatPill(container, propType) {
+    const mapping = { points:'pts', rebounds:'reb', assists:'ast', threes:'fg3m', blocks:'blk', steals:'stl' };
+    const statKey = mapping[propType];
+    const propLabel = { points:'PTS', rebounds:'REB', assists:'AST', threes:'3PM', blocks:'BLK', steals:'STL' }[propType];
+
+    const missing = sbRows.filter(r => !boxPlayerProps[r.apiGame.id]);
+    if (missing.length) {
+      container.innerHTML = `<div class="sb-loading">Loading ${propLabel}…</div>`;
+      Promise.all(missing.map(async r => {
+        const g = r.apiGame;
+        const realGameId = typeof g.id === 'number' ? g.id : null;
+        if (!realGameId) return;
+        try {
+          const props = await fetchPlayerPropsForGame(realGameId);
+          if (props) {
+            boxPlayerProps[g.id] = props;
+            const ids = Object.keys(props);
+            await Promise.all([fetchPlayerNames(ids), fetchSeasonAvgs(ids)]);
+          }
+        } catch (_) {}
+      })).then(() => {
+        if (sbActivePill === propType) renderStatPillBody(container, propType, statKey, propLabel);
+      });
+      return;
+    }
+    renderStatPillBody(container, propType, statKey, propLabel);
+  }
+
+  function renderStatPillBody(container, propType, statKey, propLabel) {
+    const groups = sbRows.map(r => {
+      const g = r.apiGame;
+      const series = r.series;
+      const props = boxPlayerProps[g.id] || {};
+      const eligible = Object.keys(props).filter(pid => {
+        const p = props[pid]?.[propType];
+        return p && p.line != null;
+      });
+      if (!eligible.length) return null;
+      eligible.sort((a, b) => (props[b][propType].line || 0) - (props[a][propType].line || 0));
+
+      const homeT = getTeam(series.home);
+      const awayT = getTeam(series.away);
+      const timeStr = formatSbTipoff(g);
+      const playerRows = eligible.map(pid => renderStatPlayerRow(pid, g.id, propType, statKey, propLabel)).join('');
+
+      return `
+        <div class="sp-game-group">
+          <div class="sp-game-head">
+            ${escapeHtml(awayT.abbr)} @ ${escapeHtml(homeT.abbr)}
+            <span class="sp-game-time">${escapeHtml(timeStr)}</span>
+          </div>
+          ${playerRows}
+        </div>
+      `;
+    }).filter(Boolean).join('');
+
+    if (!groups) {
+      container.innerHTML = `<div class="sb-empty-state"><div class="sb-empty-title">No ${propLabel} props yet</div><div class="sb-empty-sub">DraftKings posts these closer to tipoff</div></div>`;
+      return;
+    }
+    container.innerHTML = groups;
+    wireStatPillInteractions(container);
+    markStagedCells();
+  }
+
+  function renderStatPlayerRow(pid, gameId, propType, statKey, propLabel) {
+    const meta = playerNameCache[pid] || {};
+    const name = ((meta.first || '') + ' ' + (meta.last || '')).trim() || `Player ${pid}`;
+    const teamAbbr = meta.teamAbbr || '';
+    const avg = seasonAvgCache[pid]?.[statKey];
+    const avgStr = (typeof avg === 'number') ? avg.toFixed(1) : null;
+    const prop = (boxPlayerProps[gameId] || {})[pid]?.[propType];
+    if (!prop || prop.line == null) return '';
+    const mainLine = prop.line;
+    const step = LINE_STEP[propType] || 1.0;
+    const minLine = Math.max(0.5, mainLine - 4 * step);
+    const maxLine = mainLine + 4 * step;
+    const currentLine = mainLine;
+    const sliderId = `sp-${gameId}-${pid}`;
+
+    const alts = buildAlternateLines(mainLine, prop.overOdds, prop.underOdds, propType);
+    const currentAlt = alts.find(a => a.line === currentLine) || alts.find(a => a.isMain) || alts[0];
+    const overDec = americanToDecimal(currentAlt?.overOdds);
+    const underDec = americanToDecimal(currentAlt?.underOdds);
+
+    const avgLabels = { points:'PPG', rebounds:'RPG', assists:'APG', threes:'3PG', blocks:'BPG', steals:'SPG' };
+
     return `
-      <div class="sb-game-card ${expanded ? 'expanded' : ''} ${locked ? 'locked' : ''}" data-game-id="${g.id}">
-        <button class="sb-game-card-head" type="button">
-          <div class="sb-game-card-teams">
-            <span class="sb-game-card-team">${escapeHtml(awayT.abbr)} ${escapeHtml(awayT.name.split(' ').pop())}</span>
-            <span class="sb-game-card-at">@</span>
-            <span class="sb-game-card-team">${escapeHtml(homeT.abbr)} ${escapeHtml(homeT.name.split(' ').pop())}</span>
+      <div class="sp-player-row" data-player-id="${pid}" data-game-id="${gameId}" data-prop-type="${propType}" data-main-line="${mainLine}" data-min-line="${minLine}" data-max-line="${maxLine}" data-step="${step}" data-current-line="${currentLine}">
+        <div class="sp-top">
+          <div class="sp-name-block">
+            <div class="sp-name">${escapeHtml(name)}</div>
+            <div class="sp-sub">${escapeHtml(teamAbbr)}${avgStr != null ? ` · ${avgLabels[propType]}: ${avgStr}` : ''}</div>
           </div>
-          <div class="sb-game-card-right">
-            <span class="sb-game-card-tipoff">${tipoffLabel}</span>
-            ${locked
-              ? '<span class="sb-game-card-locked">LOCKED</span>'
-              : '<span class="sb-game-card-chev">›</span>'}
+          <div>
+            <span class="sp-line-num" data-role="line-display">${currentLine}</span>
+            <span class="sp-line-main-badge" style="${currentLine === mainLine ? '' : 'visibility:hidden'}" data-role="main-badge">MAIN</span>
           </div>
-        </button>
-        <div class="sb-game-card-body"></div>
+        </div>
+        <div class="sp-slider-wrap">
+          <span class="sp-slider-label">${minLine}</span>
+          <input type="range" class="sp-slider" id="${sliderId}" min="${minLine}" max="${maxLine}" step="${step}" value="${currentLine}">
+          <span class="sp-slider-label">${maxLine}</span>
+        </div>
+        <div class="sp-ou-grid">
+          <button class="sp-ou" type="button" data-role="ou" data-side="over">
+            <span class="sp-ou-label">Over <span data-role="ou-line-o">${currentLine}</span></span>
+            <span class="sp-ou-val" data-role="ou-odds-o">${overDec != null ? overDec.toFixed(2) : '—'}</span>
+          </button>
+          <button class="sp-ou" type="button" data-role="ou" data-side="under">
+            <span class="sp-ou-label">Under <span data-role="ou-line-u">${currentLine}</span></span>
+            <span class="sp-ou-val" data-role="ou-odds-u">${underDec != null ? underDec.toFixed(2) : '—'}</span>
+          </button>
+        </div>
       </div>
     `;
   }
 
+  function wireStatPillInteractions(container) {
+    container.querySelectorAll('.sp-player-row').forEach(row => {
+      const slider = row.querySelector('.sp-slider');
+      if (slider) {
+        slider.addEventListener('input', () => updateRowForLine(row, parseFloat(slider.value)));
+      }
+      row.querySelectorAll('[data-role="ou"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const side = btn.dataset.side;
+          const line = parseFloat(row.dataset.currentLine);
+          const pid = row.dataset.playerId;
+          const gameId = row.dataset.gameId;
+          const propType = row.dataset.propType;
+          const alts = recomputeAltsForRow(row);
+          const alt = alts.find(a => Math.abs(a.line - line) < 1e-6) || alts.find(a => a.isMain);
+          const odds = side === 'over' ? alt?.overOdds : alt?.underOdds;
+          toggleStaged({ kind: 'prop', gameId, playerId: pid, propType, side, line, odds });
+          markStagedCells();
+        });
+      });
+    });
+  }
+
+  function recomputeAltsForRow(row) {
+    const gameId = row.dataset.gameId;
+    const pid = row.dataset.playerId;
+    const propType = row.dataset.propType;
+    const prop = (boxPlayerProps[gameId] || {})[pid]?.[propType];
+    if (!prop) return [];
+    return buildAlternateLines(prop.line, prop.overOdds, prop.underOdds, propType);
+  }
+
+  function updateRowForLine(row, newLine) {
+    const step = parseFloat(row.dataset.step);
+    const mainLine = parseFloat(row.dataset.mainLine);
+    const snapped = Math.round((newLine - mainLine) / step) * step + mainLine;
+    row.dataset.currentLine = snapped;
+    const alts = recomputeAltsForRow(row);
+    const alt = alts.find(a => Math.abs(a.line - snapped) < 1e-6) || alts.find(a => a.isMain);
+    const overDec = americanToDecimal(alt?.overOdds);
+    const underDec = americanToDecimal(alt?.underOdds);
+    row.querySelector('[data-role="line-display"]').textContent = snapped;
+    row.querySelector('[data-role="main-badge"]').style.visibility = (snapped === mainLine) ? '' : 'hidden';
+    row.querySelector('[data-role="ou-line-o"]').textContent = snapped;
+    row.querySelector('[data-role="ou-line-u"]').textContent = snapped;
+    row.querySelector('[data-role="ou-odds-o"]').textContent = overDec != null ? overDec.toFixed(2) : '—';
+    row.querySelector('[data-role="ou-odds-u"]').textContent = underDec != null ? underDec.toFixed(2) : '—';
+    markStagedCells();
+  }
+
+  function toggleStaged(sel) {
+    const key = selectionKey(sel);
+    if (sbStagedSelections[key]) {
+      delete sbStagedSelections[key];
+    } else {
+      sbStagedSelections[key] = sel;
+    }
+    if (typeof refreshStageFooter === 'function') refreshStageFooter();
+  }
+  function markStagedCells() {
+    document.querySelectorAll('.gl-cell[data-sel]').forEach(cell => {
+      const selStr = cell.getAttribute('data-sel');
+      if (!selStr) return;
+      try {
+        const sel = JSON.parse(selStr);
+        const key = selectionKey(sel);
+        cell.classList.toggle('staged', !!sbStagedSelections[key]);
+      } catch (_) {}
+    });
+    document.querySelectorAll('.sp-player-row').forEach(row => {
+      const line = parseFloat(row.dataset.currentLine);
+      const pid = row.dataset.playerId;
+      const gameId = row.dataset.gameId;
+      const propType = row.dataset.propType;
+      ['over','under'].forEach(side => {
+        const key = selectionKey({ kind:'prop', gameId, playerId: pid, propType, line, side });
+        const btn = row.querySelector(`.sp-ou[data-side="${side}"]`);
+        if (btn) btn.classList.toggle('staged', !!sbStagedSelections[key]);
+      });
+    });
+  }
+
+  function wireGlCellTaps(container) {
+    container.querySelectorAll('.gl-cell[data-sel]').forEach(cell => {
+      const selStr = cell.getAttribute('data-sel');
+      if (!selStr) return;
+      cell.addEventListener('click', () => {
+        try {
+          const sel = JSON.parse(selStr);
+          toggleStaged(sel);
+          markStagedCells();
+        } catch (_) {}
+      });
+    });
+  }
+
+  // Render a single game card in the Sportsbook Games list.
   // Format tipoff for sportsbook cards — "TONIGHT 10:30 PM ET" etc.
   function formatSbTipoff(game) {
     const raw = game.datetime || game.status || '';
@@ -8273,270 +8909,351 @@
     });
   }
 
-  // ================== BET SLIP DRAWER ==================
-  // State of the currently-open bet slip
-  let betSlip = null;
+  // ================== BET SLIP DRAWER + FOOTER ==================
+  // Single source of truth: sbStagedSelections (declared earlier). The footer
+  // watches this and shows/hides automatically.
 
-  function ensureBetSlipMount() {
-    if (document.getElementById('betSlipBackdrop')) return;
-    const bd = document.createElement('div');
-    bd.id = 'betSlipBackdrop';
-    bd.className = 'bet-slip-backdrop';
-    bd.addEventListener('click', closeBetSlip);
-    document.body.appendChild(bd);
+  // Ensure the footer + drawer DOM exist (lazy-create on first call)
+  function ensureBetSlipUI() {
+    if (document.getElementById('sbStageFooter')) return;
 
-    const dr = document.createElement('div');
-    dr.id = 'betSlipDrawer';
-    dr.className = 'bet-slip-drawer';
-    document.body.appendChild(dr);
+    const footer = document.createElement('div');
+    footer.id = 'sbStageFooter';
+    footer.className = 'sb-stage-footer';
+    footer.innerHTML = `
+      <div class="sb-stage-footer-inner">
+        <div class="sb-stage-count">
+          <span class="sb-stage-count-num" id="sbStageCount">0</span>
+          <span class="sb-stage-count-label">SELECTIONS</span>
+        </div>
+        <button class="sb-stage-review-btn" id="sbStageReviewBtn" type="button">Review Bet Slip ›</button>
+      </div>
+    `;
+    document.body.appendChild(footer);
+    document.getElementById('sbStageReviewBtn').addEventListener('click', openBetSlipDrawer);
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'sbSlipBackdrop';
+    backdrop.className = 'sb-slip-backdrop';
+    backdrop.addEventListener('click', closeBetSlipDrawer);
+    document.body.appendChild(backdrop);
+
+    const drawer = document.createElement('div');
+    drawer.id = 'sbSlipDrawer';
+    drawer.className = 'sb-slip-drawer';
+    document.body.appendChild(drawer);
   }
 
-  function openBetSlip(opts) {
-    // opts: { playerId, gameId, propType, mainLine, mainOverOdds, mainUnderOdds }
-    ensureBetSlipMount();
-    const meta = playerNameCache[opts.playerId] || {};
-    const name = `${meta.first || ''} ${meta.last || ''}`.trim() || `Player ${opts.playerId}`;
-    const teamAbbr = meta.teamAbbr || '';
+  // Refresh the footer's count + visibility. Call whenever selections change.
+  function refreshStageFooter() {
+    ensureBetSlipUI();
+    const footer = document.getElementById('sbStageFooter');
+    const count = Object.keys(sbStagedSelections).length;
+    const countEl = document.getElementById('sbStageCount');
+    if (countEl) countEl.textContent = count;
+    footer.classList.toggle('visible', count > 0);
+  }
 
-    const alts = buildAlternateLines(opts.mainLine, opts.mainOverOdds, opts.mainUnderOdds, opts.propType);
+  // --- Drawer open / render / close ---
+  let currentStake = '';
 
-    // Default selections: main line, Over side, empty stake
-    betSlip = {
-      ...opts,
-      name,
-      teamAbbr,
-      alts,
-      selectedLineIdx: alts.findIndex(a => a.isMain),
-      side: 'over',
-      stake: ''
-    };
-
-    renderBetSlip();
-
-    requestAnimationFrame(() => {
-      document.getElementById('betSlipBackdrop').classList.add('open');
-      document.getElementById('betSlipDrawer').classList.add('open');
-    });
+  function openBetSlipDrawer() {
+    ensureBetSlipUI();
+    const backdrop = document.getElementById('sbSlipBackdrop');
+    const drawer = document.getElementById('sbSlipDrawer');
+    renderBetSlipDrawer();
+    backdrop.classList.add('open');
+    drawer.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
-
-  function closeBetSlip() {
-    const bd = document.getElementById('betSlipBackdrop');
-    const dr = document.getElementById('betSlipDrawer');
-    if (bd) bd.classList.remove('open');
-    if (dr) dr.classList.remove('open');
-    betSlip = null;
+  function closeBetSlipDrawer() {
+    const backdrop = document.getElementById('sbSlipBackdrop');
+    const drawer = document.getElementById('sbSlipDrawer');
+    if (backdrop) backdrop.classList.remove('open');
+    if (drawer) drawer.classList.remove('open');
     document.body.style.overflow = '';
   }
 
-  function renderBetSlip() {
-    const dr = document.getElementById('betSlipDrawer');
-    if (!dr || !betSlip) return;
-    const { name, teamAbbr, alts, selectedLineIdx, side, stake, propType } = betSlip;
-    const activeAlt = alts[selectedLineIdx] || alts.find(a => a.isMain) || alts[0];
-    const activeOdds = side === 'over' ? activeAlt.overOdds : activeAlt.underOdds;
-    const activeDec = americanToDecimal(activeOdds);
-    const stakeNum = Number(stake) || 0;
-    const payout = (stakeNum > 0 && activeDec) ? Math.round(stakeNum * activeDec) : 0;
+  // Pretty labels for each selection based on context
+  function labelForSelection(sel) {
+    const row = sbRows.find(r => r.apiGame && String(r.apiGame.id) === String(sel.gameId));
+    const series = row?.series;
+    const awayAbbr = series ? getTeam(series.away).abbr : '';
+    const homeAbbr = series ? getTeam(series.home).abbr : '';
+    const matchup = series ? `${awayAbbr} @ ${homeAbbr}` : `Game ${sel.gameId}`;
 
-    const propLabel = ({
-      points: 'Points', rebounds: 'Rebounds', assists: 'Assists',
-      threes: '3-Pointers', blocks: 'Blocks', steals: 'Steals'
-    })[propType] || propType;
-
-    const linesHtml = alts.map((a, i) => `
-      <button class="bet-slip-line-btn ${a.isMain ? 'main' : ''} ${i === selectedLineIdx ? 'active' : ''}"
-              data-bs-line="${i}" type="button">
-        ${a.line}
-      </button>
-    `).join('');
-
-    const overDec = americanToDecimal(activeAlt.overOdds);
-    const underDec = americanToDecimal(activeAlt.underOdds);
-
-    // Min-bet check for submit button
-    const canPlace = stakeNum >= 10 && stakeNum <= (sportsbookBalance || 0);
-    let submitLabel = 'Place Bet';
-    if (stakeNum > 0 && stakeNum < 10) submitLabel = 'Min bet is 10';
-    else if (stakeNum > (sportsbookBalance || 0)) submitLabel = 'Insufficient coins';
-
-    dr.innerHTML = `
-      <div class="bet-slip-handle"></div>
-      <div class="bet-slip-head">
-        <div>
-          <div class="bet-slip-player">${escapeHtml(name)}</div>
-          <div class="bet-slip-sub">${escapeHtml(teamAbbr)} · ${escapeHtml(propLabel)}</div>
-        </div>
-        <button class="bet-slip-close" type="button" id="betSlipCloseBtn" aria-label="Close">×</button>
-      </div>
-
-      <div class="bet-slip-section">
-        <div class="bet-slip-label">Line</div>
-        <div class="bet-slip-lines">${linesHtml}</div>
-      </div>
-
-      <div class="bet-slip-section">
-        <div class="bet-slip-label">Pick a side</div>
-        <div class="bet-slip-sides">
-          <button class="bet-slip-side-btn ${side === 'over' ? 'active' : ''}" data-bs-side="over" type="button">
-            <span class="bss-label">Over ${activeAlt.line}</span>
-            <span class="bss-odds">${overDec != null ? overDec.toFixed(2) : '—'}</span>
-          </button>
-          <button class="bet-slip-side-btn ${side === 'under' ? 'active' : ''}" data-bs-side="under" type="button">
-            <span class="bss-label">Under ${activeAlt.line}</span>
-            <span class="bss-odds">${underDec != null ? underDec.toFixed(2) : '—'}</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="bet-slip-section">
-        <div class="bet-slip-label">Stake (coins)</div>
-        <div class="bet-slip-stake">
-          <input type="number" inputmode="numeric" id="betSlipStakeInput" placeholder="0" value="${stake}" min="10" step="1" />
-          <div class="bet-slip-stake-unit">COINS</div>
-        </div>
-        <div class="bet-slip-chips">
-          <button class="bet-slip-chip" data-bs-chip="10" type="button">10</button>
-          <button class="bet-slip-chip" data-bs-chip="50" type="button">50</button>
-          <button class="bet-slip-chip" data-bs-chip="100" type="button">100</button>
-          <button class="bet-slip-chip" data-bs-chip="max" type="button">MAX</button>
-        </div>
-      </div>
-
-      <div class="bet-slip-payout">
-        <span class="bet-slip-payout-label">Potential Payout</span>
-        <span class="bet-slip-payout-val">${payout.toLocaleString()} coins</span>
-      </div>
-
-      <button class="bet-slip-submit" type="button" id="betSlipSubmitBtn" ${canPlace ? '' : 'disabled'}>
-        ${submitLabel}
-      </button>
-    `;
-
-    wireBetSlipEvents();
+    if (sel.kind === 'spread') {
+      const signed = sel.line > 0 ? `+${sel.line}` : `${sel.line}`;
+      return { title: `${sel.side} ${signed}`, sub: `${matchup} · Spread` };
+    }
+    if (sel.kind === 'ml') {
+      return { title: `${sel.side} Moneyline`, sub: matchup };
+    }
+    if (sel.kind === 'total') {
+      const label = sel.side === 'O' ? 'Over' : 'Under';
+      return { title: `${label} ${sel.line}`, sub: `${matchup} · Total` };
+    }
+    if (sel.kind === 'prop') {
+      const meta = playerNameCache[sel.playerId] || {};
+      const name = `${meta.first || ''} ${meta.last || ''}`.trim() || `Player ${sel.playerId}`;
+      const propName = ({
+        points: 'Points', rebounds: 'Rebounds', assists: 'Assists',
+        threes: '3-Pointers', blocks: 'Blocks', steals: 'Steals'
+      })[sel.propType] || sel.propType;
+      const sideLabel = sel.side === 'over' ? 'Over' : 'Under';
+      return { title: `${name} — ${sideLabel} ${sel.line} ${propName}`, sub: matchup };
+    }
+    return { title: 'Unknown selection', sub: '' };
   }
 
-  function wireBetSlipEvents() {
-    const dr = document.getElementById('betSlipDrawer');
-    if (!dr) return;
+  function renderBetSlipDrawer() {
+    const drawer = document.getElementById('sbSlipDrawer');
+    if (!drawer) return;
+    const keys = Object.keys(sbStagedSelections);
+    const isEmpty = keys.length === 0;
+    const isSingle = keys.length === 1;
+    const isParlay = keys.length >= 2;
 
-    dr.querySelector('#betSlipCloseBtn')?.addEventListener('click', closeBetSlip);
-
-    dr.querySelectorAll('[data-bs-line]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!betSlip) return;
-        betSlip.selectedLineIdx = Number(btn.dataset.bsLine);
-        renderBetSlip();
-      });
-    });
-
-    dr.querySelectorAll('[data-bs-side]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!betSlip) return;
-        betSlip.side = btn.dataset.bsSide;
-        renderBetSlip();
-      });
-    });
-
-    dr.querySelectorAll('[data-bs-chip]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!betSlip) return;
-        const v = btn.dataset.bsChip;
-        if (v === 'max') {
-          betSlip.stake = String(sportsbookBalance || 0);
-        } else {
-          betSlip.stake = v;
-        }
-        renderBetSlip();
-      });
-    });
-
-    const stakeInput = dr.querySelector('#betSlipStakeInput');
-    if (stakeInput) {
-      stakeInput.addEventListener('input', (e) => {
-        if (!betSlip) return;
-        // Strip non-digit except nothing (integer only)
-        const cleaned = e.target.value.replace(/[^0-9]/g, '');
-        betSlip.stake = cleaned;
-        // Only re-render the payout + submit — avoid re-rendering input (would lose focus)
-        updateBetSlipPayoutAndSubmit();
-      });
+    if (isEmpty) {
+      drawer.innerHTML = `
+        <div class="sb-slip-handle"></div>
+        <div class="sb-slip-head">
+          <div class="sb-slip-title">Bet Slip</div>
+          <button class="sb-slip-close" type="button" onclick="closeBetSlipDrawer()" aria-label="Close">×</button>
+        </div>
+        <div class="sb-slip-empty">No selections yet. Tap an odd to add.</div>
+      `;
+      return;
     }
 
-    dr.querySelector('#betSlipSubmitBtn')?.addEventListener('click', () => {
-      // Session 2a: placeholder — session 2b will wire to Supabase
-      if (!betSlip) return;
-      const btn = dr.querySelector('#betSlipSubmitBtn');
-      btn.disabled = true;
-      btn.textContent = 'Session 2b will wire this up';
-      setTimeout(() => { closeBetSlip(); }, 900);
+    // Compute combined odds (decimal multiplied for parlay, just the single's for single)
+    let combinedDec = 1;
+    keys.forEach(k => {
+      const sel = sbStagedSelections[k];
+      const dec = americanToDecimal(sel.odds);
+      if (dec) combinedDec *= dec;
     });
+
+    const legsHtml = keys.map(k => {
+      const sel = sbStagedSelections[k];
+      const { title, sub } = labelForSelection(sel);
+      const dec = americanToDecimal(sel.odds);
+      return `
+        <div class="sb-slip-leg">
+          <div class="sb-slip-leg-info">
+            <div class="sb-slip-leg-title">${escapeHtml(title)}</div>
+            <div class="sb-slip-leg-sub">${escapeHtml(sub)}</div>
+          </div>
+          <div class="sb-slip-leg-right">
+            <span class="sb-slip-leg-odds">${dec != null ? dec.toFixed(2) : '—'}</span>
+            <button class="sb-slip-leg-remove" type="button" data-remove-key="${escapeHtml(k)}" aria-label="Remove">×</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const stakeNum = Number(currentStake) || 0;
+    const payout = (stakeNum > 0 && combinedDec > 0) ? Math.round(stakeNum * combinedDec) : 0;
+    const profit = payout - stakeNum;
+
+    const canPlace = stakeNum >= 10 && stakeNum <= (sportsbookBalance || 0);
+    let submitLabel = isParlay
+      ? `Place Parlay · ${payout.toLocaleString()} coins`
+      : `Place Bet · ${payout.toLocaleString()} coins`;
+    if (stakeNum > 0 && stakeNum < 10) submitLabel = 'Min bet is 10';
+    else if (stakeNum > (sportsbookBalance || 0)) submitLabel = 'Insufficient coins';
+    else if (!stakeNum) submitLabel = isParlay ? 'Place Parlay' : 'Place Bet';
+
+    const betTypeLabel = isParlay ? `${keys.length}-Leg Parlay` : 'Single';
+
+    drawer.innerHTML = `
+      <div class="sb-slip-handle"></div>
+      <div class="sb-slip-head">
+        <div>
+          <div class="sb-slip-title">Bet Slip</div>
+          <div class="sb-slip-subtitle">${betTypeLabel}</div>
+        </div>
+        <button class="sb-slip-close" type="button" onclick="closeBetSlipDrawer()" aria-label="Close">×</button>
+      </div>
+      <div class="sb-slip-legs">${legsHtml}</div>
+      ${isParlay ? `
+        <div class="sb-slip-combined">
+          <span class="sb-slip-combined-label">Combined Odds</span>
+          <span class="sb-slip-combined-val">${combinedDec.toFixed(2)}</span>
+        </div>
+      ` : ''}
+      <div class="sb-slip-stake-section">
+        <div class="sb-slip-stake-label">Stake</div>
+        <div class="sb-slip-stake-row">
+          <input type="number" inputmode="numeric" id="sbSlipStakeInput" value="${escapeHtml(currentStake)}" placeholder="0" min="10" step="1" />
+          <div class="sb-slip-stake-unit">COINS</div>
+        </div>
+        <div class="sb-slip-chips">
+          <button class="sb-slip-chip" data-chip="10" type="button">10</button>
+          <button class="sb-slip-chip" data-chip="50" type="button">50</button>
+          <button class="sb-slip-chip" data-chip="100" type="button">100</button>
+          <button class="sb-slip-chip" data-chip="max" type="button">MAX</button>
+        </div>
+      </div>
+      <div class="sb-slip-payout">
+        <div class="sb-slip-payout-row">
+          <span class="sb-slip-payout-label">Potential Payout</span>
+          <span class="sb-slip-payout-val">${payout.toLocaleString()}</span>
+        </div>
+        <div class="sb-slip-payout-row sub">
+          <span class="sb-slip-payout-label">Profit</span>
+          <span class="sb-slip-payout-sub-val">${profit > 0 ? '+' + profit.toLocaleString() : '0'}</span>
+        </div>
+      </div>
+      <button class="sb-slip-submit" type="button" id="sbSlipSubmitBtn" ${canPlace ? '' : 'disabled'}>${escapeHtml(submitLabel)}</button>
+    `;
+
+    // Wire up interactions
+    drawer.querySelectorAll('[data-remove-key]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.removeKey;
+        delete sbStagedSelections[key];
+        refreshStageFooter();
+        markStagedCells();
+        renderBetSlipDrawer();
+        if (!Object.keys(sbStagedSelections).length) closeBetSlipDrawer();
+      });
+    });
+    drawer.querySelectorAll('[data-chip]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const v = btn.dataset.chip;
+        if (v === 'max') currentStake = String(sportsbookBalance || 0);
+        else currentStake = v;
+        renderBetSlipDrawer();
+      });
+    });
+    const stakeInput = drawer.querySelector('#sbSlipStakeInput');
+    if (stakeInput) {
+      stakeInput.addEventListener('input', (e) => {
+        currentStake = e.target.value.replace(/[^0-9]/g, '');
+        updateSlipPayoutInline();
+      });
+    }
+    const submitBtn = drawer.querySelector('#sbSlipSubmitBtn');
+    if (submitBtn) submitBtn.addEventListener('click', placeBet);
   }
 
-  // Update just payout + submit without full re-render (so stake input keeps focus)
-  function updateBetSlipPayoutAndSubmit() {
-    if (!betSlip) return;
-    const dr = document.getElementById('betSlipDrawer');
-    if (!dr) return;
-    const { alts, selectedLineIdx, side, stake } = betSlip;
-    const activeAlt = alts[selectedLineIdx] || alts.find(a => a.isMain) || alts[0];
-    const activeOdds = side === 'over' ? activeAlt.overOdds : activeAlt.underOdds;
-    const activeDec = americanToDecimal(activeOdds);
-    const stakeNum = Number(stake) || 0;
-    const payout = (stakeNum > 0 && activeDec) ? Math.round(stakeNum * activeDec) : 0;
-    const payoutEl = dr.querySelector('.bet-slip-payout-val');
-    if (payoutEl) payoutEl.textContent = `${payout.toLocaleString()} coins`;
-    const submitBtn = dr.querySelector('#betSlipSubmitBtn');
+  // Update payout + submit button without re-rendering entire drawer (keeps input focus)
+  function updateSlipPayoutInline() {
+    const drawer = document.getElementById('sbSlipDrawer');
+    if (!drawer) return;
+    const keys = Object.keys(sbStagedSelections);
+    let combinedDec = 1;
+    keys.forEach(k => {
+      const sel = sbStagedSelections[k];
+      const dec = americanToDecimal(sel.odds);
+      if (dec) combinedDec *= dec;
+    });
+    const stakeNum = Number(currentStake) || 0;
+    const payout = (stakeNum > 0) ? Math.round(stakeNum * combinedDec) : 0;
+    const profit = payout - stakeNum;
+    const isParlay = keys.length >= 2;
+
+    const payoutEl = drawer.querySelector('.sb-slip-payout-val');
+    if (payoutEl) payoutEl.textContent = payout.toLocaleString();
+    const profitEl = drawer.querySelector('.sb-slip-payout-sub-val');
+    if (profitEl) profitEl.textContent = profit > 0 ? '+' + profit.toLocaleString() : '0';
+    const submitBtn = drawer.querySelector('#sbSlipSubmitBtn');
     if (submitBtn) {
       const canPlace = stakeNum >= 10 && stakeNum <= (sportsbookBalance || 0);
-      let label = 'Place Bet';
+      let label = isParlay ? `Place Parlay · ${payout.toLocaleString()} coins` : `Place Bet · ${payout.toLocaleString()} coins`;
       if (stakeNum > 0 && stakeNum < 10) label = 'Min bet is 10';
       else if (stakeNum > (sportsbookBalance || 0)) label = 'Insufficient coins';
+      else if (!stakeNum) label = isParlay ? 'Place Parlay' : 'Place Bet';
       submitBtn.disabled = !canPlace;
       submitBtn.textContent = label;
     }
   }
 
-  // Hook into the main-site onclick for player rows. When inside Sportsbook tab,
-  // open the bet slip instead of the modal. We detect by checking if the click
-  // happened inside the Sportsbook games list.
-  const _originalOpenPlayer = window.__openPlayer;
-  window.__openPlayer = function(playerId, gameId) {
-    // Find the clicked row to detect context
-    const rowEl = document.querySelector(`.pv2-row[data-player-id="${playerId}"][data-game-id="${gameId}"]`);
-    const insideSportsbook = rowEl && rowEl.closest('#sb-games');
-    if (!insideSportsbook) {
-      // Original behavior (player detail modal)
-      if (_originalOpenPlayer) _originalOpenPlayer(playerId, gameId);
+  // --- Placement ---
+  async function placeBet() {
+    const keys = Object.keys(sbStagedSelections);
+    if (!keys.length) return;
+    const stake = Number(currentStake) || 0;
+    if (stake < 10) return;
+    if (stake > (sportsbookBalance || 0)) return;
+    if (!supa || !sportsbookUserName) {
+      alert('Not connected to account');
       return;
     }
-    // Sportsbook — open the bet slip. Find game + props.
-    const rowData = (sbRows || []).find(r => r.apiGame && String(r.apiGame.id) === String(gameId))
-                 || [...(currentRowsRef?.liveRowsToShow || []),
-                     ...(currentRowsRef?.scheduledRowsToShow || [])]
-                      .find(r => r.apiGame && String(r.apiGame.id) === String(gameId));
-    if (!rowData) return;
-    const g = rowData.apiGame;
-    // Bets lock once game is live
-    if (isLiveStatus(g.status) || isFinalStatus(g.status)) {
-      // TODO: show toast
-      console.log('[betSlip] bets locked — game is live or final');
-      return;
-    }
-    const props = boxPlayerProps[g.id]?.[playerId];
-    if (!props) return;
-    // Default prop to bet on: points if available, else first stat with a line
-    const ORDER = ['points','rebounds','assists','threes','blocks','steals'];
-    const propType = ORDER.find(k => props[k]?.line != null);
-    if (!propType) return;
-    const { line, overOdds, underOdds } = props[propType];
-    openBetSlip({
-      playerId, gameId, propType,
-      mainLine: line,
-      mainOverOdds: overOdds,
-      mainUnderOdds: underOdds
+
+    const submitBtn = document.getElementById('sbSlipSubmitBtn');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Placing...'; }
+
+    const legs = keys.map(k => sbStagedSelections[k]);
+    let combinedDec = 1;
+    legs.forEach(l => {
+      const dec = americanToDecimal(l.odds);
+      if (dec) combinedDec *= dec;
     });
-  };
+    const payout = Math.round(stake * combinedDec);
+    const isParlay = legs.length >= 2;
+
+    try {
+      // 1) Insert bet row
+      const { data: betRow, error: betErr } = await supa
+        .from('bets')
+        .insert({
+          user_name: sportsbookUserName,
+          bet_type: isParlay ? 'parlay' : 'single',
+          legs: legs,
+          stake: stake,
+          combined_odds: combinedDec,
+          potential_payout: payout,
+          status: 'pending'
+        })
+        .select()
+        .single();
+      if (betErr) throw betErr;
+
+      // 2) Debit balance
+      const newBalance = (sportsbookBalance || 0) - stake;
+      const { error: updErr } = await supa
+        .from('sportsbook_users')
+        .update({ balance: newBalance, updated_at: new Date().toISOString() })
+        .eq('user_name', sportsbookUserName);
+      if (updErr) throw updErr;
+
+      sportsbookBalance = newBalance;
+
+      // 3) Clear staged, close drawer, refresh UI
+      Object.keys(sbStagedSelections).forEach(k => delete sbStagedSelections[k]);
+      currentStake = '';
+      refreshStageFooter();
+      markStagedCells();
+      renderSportsbookBalance();
+      closeBetSlipDrawer();
+
+      // Show a brief toast confirming placement
+      showBetConfirmToast(isParlay ? `${legs.length}-leg parlay placed · ${stake} coins` : `Bet placed · ${stake} coins`);
+
+    } catch (err) {
+      console.error('[sb] place bet failed', err);
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Retry'; }
+      alert('Bet placement failed: ' + (err.message || err));
+    }
+  }
+
+  function showBetConfirmToast(msg) {
+    let toast = document.getElementById('sbToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'sbToast';
+      toast.className = 'sb-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2600);
+  }
+
+  // Expose close for inline onclick
+  window.closeBetSlipDrawer = closeBetSlipDrawer;
 
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
