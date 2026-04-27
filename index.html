@@ -10920,26 +10920,59 @@
     // IMPORTANT: PBP endpoint requires the REAL numeric game_id, not our synthetic
     // string ID (e.g. "live-2026-04-26-HOU@LAL"). Live-game records carry the
     // real id in g.real_game_id. Final-game records have a numeric id directly.
-    const pbpGameId = g.real_game_id || (typeof g.id === 'number' ? g.id : null);
+    let pbpGameId = g.real_game_id || (typeof g.id === 'number' ? g.id : null);
     if (tab === 'pbp' && (isLive || isFinal) && !boxPlays[g.id] && typeof fetchPlaysForGame === 'function') {
-      if (!pbpGameId) {
-        // Can't fetch — mark error so user sees a useful message
-        boxPlays[g.id] = { __error: 'Real game ID not yet available for this live game. Refresh in a moment.' };
-      } else {
+      // Fallback: if we don't have the real id, try to look it up via /games for this date.
+      // (Happens when sync's /games call failed/race-conditioned during initial load.)
+      const tryFetch = async () => {
+        if (!pbpGameId) {
+          try {
+            const gameDate = g.date || (typeof currentScorecardDate === 'function' ? currentScorecardDate() : null);
+            if (gameDate && typeof fetchGamesForDate === 'function') {
+              const games = await fetchGamesForDate(gameDate);
+              if (Array.isArray(games)) {
+                const apiHomeAbb = g.home_team?.abbreviation;
+                const apiAwayAbb = g.visitor_team?.abbreviation;
+                const match = games.find(x =>
+                  x.home_team?.abbreviation === apiHomeAbb &&
+                  x.visitor_team?.abbreviation === apiAwayAbb
+                );
+                if (match?.id) {
+                  pbpGameId = match.id;
+                  // Cache on the live record so future fetches don't repeat the lookup
+                  g.real_game_id = match.id;
+                  console.log('[gd] resolved real_game_id via fallback:', match.id);
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('[gd] fallback /games lookup failed', err);
+          }
+        }
+        if (!pbpGameId) {
+          boxPlays[g.id] = { __error: 'Could not find real game ID for this live game. The /games endpoint may be rate-limited — try again in a minute.' };
+          if (location.hash.startsWith(`#game/${gameId}`)) {
+            const currentTab = location.hash.split('/')[2] || 'pbp';
+            if (currentTab === 'pbp') renderGameDetail(gameId, currentTab);
+          }
+          return;
+        }
         try {
-          fetchPlaysForGame(pbpGameId).then(result => {
-            if (result.plays) {
-              boxPlays[g.id] = result.plays;
-            } else {
-              boxPlays[g.id] = { __error: result.error || 'Unknown error' };
-            }
-            if (location.hash.startsWith(`#game/${gameId}`)) {
-              const currentTab = location.hash.split('/')[2] || 'pbp';
-              if (currentTab === 'pbp') renderGameDetail(gameId, currentTab);
-            }
-          }).catch(err => console.warn('[gd] plays fetch failed', err));
-        } catch (e) { /* fetcher may not exist */ }
-      }
+          const result = await fetchPlaysForGame(pbpGameId);
+          if (result.plays) {
+            boxPlays[g.id] = result.plays;
+          } else {
+            boxPlays[g.id] = { __error: result.error || 'Unknown error' };
+          }
+          if (location.hash.startsWith(`#game/${gameId}`)) {
+            const currentTab = location.hash.split('/')[2] || 'pbp';
+            if (currentTab === 'pbp') renderGameDetail(gameId, currentTab);
+          }
+        } catch (err) {
+          console.warn('[gd] plays fetch failed', err);
+        }
+      };
+      tryFetch();
     }
   }
 
