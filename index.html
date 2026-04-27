@@ -4998,49 +4998,259 @@
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }
-  .gd-stat-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-    font-family: 'Inter', sans-serif;
+  /* ===== Box Score (Underdog/Action-Network style) ===== */
+  /* Team toggle bar: [CLE] [TOR] with active-team underline */
+  .gd-team-toggle {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+    margin: 0 -14px 16px;
   }
-  .gd-stat-table th {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.12em;
+  .gd-team-toggle-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 14px 12px 12px;
     color: var(--ink-dim);
-    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
     text-transform: uppercase;
-    padding: 8px 4px;
-    border-bottom: 1px solid var(--line-soft);
-    text-align: center;
   }
-  .gd-stat-table th:first-child { text-align: left; padding-left: 12px; }
-  .gd-stat-table td {
-    padding: 7px 4px;
-    border-bottom: 1px solid rgba(196, 178, 152, 0.06);
+  .gd-team-toggle-btn:hover { color: var(--ink-2); }
+  .gd-team-toggle-btn.active {
     color: var(--ink);
-    text-align: center;
+    border-bottom-color: var(--tc);
+  }
+  /* Team summary header: logo + team name + ▽ score, then summary stat strip */
+  .bs-team-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding: 4px 2px 0;
+  }
+  .bs-team-logo {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: color-mix(in srgb, var(--tc) 14%, var(--bg-2));
+    border: 2px solid var(--tc);
+    color: var(--tc);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: 0;
+  }
+  .bs-team-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .bs-team-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .bs-team-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .bs-team-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--ink-2);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .bs-team-score::before {
+    content: '▽';
+    color: var(--ink-dim);
+    margin-right: 4px;
+    font-size: 11px;
+  }
+  /* Summary totals strip: scrolls horizontally on small screens */
+  .bs-team-totals {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .bs-team-totals::-webkit-scrollbar { display: none; }
+  .bs-total {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+    flex-shrink: 0;
+  }
+  .bs-total-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--ink);
+    letter-spacing: 0.01em;
     font-variant-numeric: tabular-nums;
   }
-  .gd-stat-table td:first-child {
-    text-align: left;
-    padding-left: 12px;
-    color: var(--ink);
+  .bs-total-pct {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    color: var(--ink-2);
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .bs-total-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-top: 4px;
     font-weight: 600;
+  }
+
+  /* Player stats: horizontally scrollable table with frozen left column.
+     Layout: each player row is a flex container.
+     - Left frozen part = jersey + name (sticky-left inside scroll wrapper)
+     - Right scroll part = MIN, PTS, REB, AST, STL, BLK, +/-, FG%, FG, 3P, FT */
+  .bs-table-wrap {
+    position: relative;
+    margin: 0 -14px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  .bs-table-wrap::-webkit-scrollbar { height: 6px; }
+  .bs-table-wrap::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 3px;
+  }
+  .bs-table {
+    min-width: 720px;
+    display: flex;
+    flex-direction: column;
+  }
+  .bs-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(196, 178, 152, 0.05);
+    min-height: 56px;
+  }
+  .bs-row.bs-row-head {
+    border-bottom: 1px solid var(--line);
+    min-height: 36px;
+  }
+  .bs-row.bs-row-dnp .bs-stat,
+  .bs-row.bs-row-dnp .bs-name {
+    color: var(--ink-dim);
+    opacity: 0.6;
+  }
+  /* Frozen player cell — sticky to left edge of scroll wrapper */
+  .bs-player-cell {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px 8px 14px;
+    width: 184px;
+    min-width: 184px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--line);
+  }
+  .bs-row-head .bs-player-cell {
+    background: var(--bg);
+    padding-top: 0;
+    padding-bottom: 6px;
+  }
+  .bs-jersey {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: 1.5px solid var(--tc);
+    color: var(--tc);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: 0;
+  }
+  .bs-player-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+  }
+  .bs-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 130px;
   }
-  .gd-stat-table tr:last-child td { border-bottom: none; }
-  .gd-stat-table tr.dnp td {
+  .bs-pos {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
     color: var(--ink-dim);
-    font-style: italic;
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+    text-transform: uppercase;
   }
-  /* On narrow screens, drop secondary columns */
+  /* Stat columns */
+  .bs-stat {
+    flex-shrink: 0;
+    width: 56px;
+    text-align: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    padding: 8px 4px;
+  }
+  .bs-stat.bs-stat-wide { width: 64px; }
+  .bs-row-head .bs-stat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--ink-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0 4px 6px;
+  }
+  /* +/- coloring */
+  .bs-stat.bs-pos-plus { color: #4ade80; }
+  .bs-stat.bs-pos-minus { color: #f87171; }
   @media (max-width: 480px) {
-    .gd-stat-table .gd-col-opt { display: none; }
+    .bs-team-logo { width: 48px; height: 48px; font-size: 17px; }
+    .bs-team-name { font-size: 15px; }
+    .bs-team-totals { gap: 14px; }
+    .bs-total-val { font-size: 20px; }
+    .bs-total-pct { font-size: 12px; }
+    .bs-player-cell { width: 156px; min-width: 156px; padding-left: 12px; gap: 8px; }
+    .bs-jersey { width: 26px; height: 26px; font-size: 11px; }
+    .bs-name { font-size: 12.5px; }
+    .bs-pos { font-size: 9px; }
+    .bs-stat { width: 48px; font-size: 15px; padding: 7px 3px; }
+    .bs-stat.bs-stat-wide { width: 56px; }
+    .bs-row { min-height: 50px; }
   }
 
   /* ===== Detail-page sub-tab bar ===== */
@@ -10798,14 +11008,15 @@
     const overlay = document.getElementById('gameDetailView');
     if (!overlay) return;
     if (location.hash.startsWith('#game/')) {
-      // Parse #game/{id}/{tab}  (tab defaults to 'pbp')
+      // Parse #game/{id}/{tab}/{teamAbbr?}  (tab defaults to 'pbp')
       const path = location.hash.slice('#game/'.length);
       const parts = path.split('/');
       const gameId = parts[0];
       const tab = parts[1] || 'pbp';
+      const subKey = parts[2] || null; // for box: which team to show
       overlay.hidden = false;
       document.body.style.overflow = 'hidden';
-      renderGameDetail(gameId, tab);
+      renderGameDetail(gameId, tab, subKey);
     } else {
       overlay.hidden = true;
       document.body.style.overflow = '';
@@ -10848,7 +11059,9 @@
 
   // Build the detailed game page in the overlay's body element.
   // tab: 'pbp' (Play-by-Play) | 'box' (Box Score). Defaults to 'pbp'.
-  function renderGameDetail(gameId, tab) {
+  // subKey: for tab='box', which team to show (the team abbr, e.g. 'TOR'/'CLE').
+  //         If absent, defaults to the away team.
+  function renderGameDetail(gameId, tab, subKey) {
     if (!tab) tab = 'pbp';
     const body = document.getElementById('gdBody');
     const titleEl = document.getElementById('gdHeaderTitle');
@@ -11010,62 +11223,174 @@
       `;
     }
 
-    // Full box score table per team
+    // Full box score for one team — renders the team header summary and
+    // a horizontally scrollable table with frozen player column on the left.
     function teamStatsHtml(teamObj, score, players) {
       if (!players || !players.length) return '';
-      const rowHtml = players.map(p => {
-        const name = `${p.player?.first_name?.[0] || ''}. ${p.player?.last_name || ''}`.trim();
-        const fg = `${p.fgm || 0}-${p.fga || 0}`;
-        const tp = `${p.fg3m || 0}-${p.fg3a || 0}`;
-        const ft = `${p.ftm || 0}-${p.fta || 0}`;
+
+      // Calculate team totals from per-player rows
+      let totFgm=0, totFga=0, totFg3m=0, totFg3a=0, totFtm=0, totFta=0;
+      let totReb=0, totAst=0, totBlk=0, totStl=0, totTo=0, totPf=0;
+      for (const p of players) {
+        totFgm += p.fgm || 0; totFga += p.fga || 0;
+        totFg3m += p.fg3m || 0; totFg3a += p.fg3a || 0;
+        totFtm += p.ftm || 0; totFta += p.fta || 0;
+        totReb += p.reb || 0; totAst += p.ast || 0;
+        totBlk += p.blk || 0; totStl += p.stl || 0;
+        totTo += p.turnover || 0; totPf += p.pf || 0;
+      }
+      const pct = (m, a) => a > 0 ? ((m / a) * 100).toFixed(1) + '%' : '—';
+      // Hide DNPs from the visible roster (sort played first; players with
+      // 0 minutes drop to bottom with .bs-row-dnp opacity).
+      const sortedPlayers = [...players].sort((a, b) => {
+        const aMin = parseInt((a.min || '0:00').split(':')[0], 10) || 0;
+        const bMin = parseInt((b.min || '0:00').split(':')[0], 10) || 0;
+        if (aMin !== bMin) return bMin - aMin;
+        return (b.pts || 0) - (a.pts || 0);
+      });
+
+      // Per-row HTML
+      const rowHtml = sortedPlayers.map(p => {
+        const fn = p.player?.first_name?.[0] || '';
+        const ln = p.player?.last_name || '';
+        const name = (fn ? `${fn}. ${ln}` : ln).trim() || '—';
+        const jersey = p.player?.jersey_number || '';
+        const pos = p.player?.position || '';
+        const min = p.min || '0:00';
+        const minNum = parseInt(min.split(':')[0], 10) || 0;
+        const isDnp = minNum === 0 && (p.pts || 0) === 0 && (p.reb || 0) === 0;
+        const plusMinus = p.plus_minus ?? p.pm ?? 0;
+        const pmCls = plusMinus > 0 ? 'bs-pos-plus' : plusMinus < 0 ? 'bs-pos-minus' : '';
+        const pmStr = plusMinus > 0 ? `+${plusMinus}` : (plusMinus < 0 ? `${plusMinus}` : '0');
+        const fgPct = (p.fga || 0) > 0 ? ((p.fgm || 0) / p.fga * 100).toFixed(1) : '—';
+        const fg = `${p.fgm || 0}/${p.fga || 0}`;
+        const tp = `${p.fg3m || 0}/${p.fg3a || 0}`;
+        const ft = `${p.ftm || 0}/${p.fta || 0}`;
         return `
-          <tr>
-            <td>${escapeHtml(name)}</td>
-            <td>${p.min || '—'}</td>
-            <td>${p.pts ?? 0}</td>
-            <td>${p.reb ?? 0}</td>
-            <td>${p.ast ?? 0}</td>
-            <td class="gd-col-opt">${fg}</td>
-            <td class="gd-col-opt">${tp}</td>
-            <td class="gd-col-opt">${ft}</td>
-          </tr>
+          <div class="bs-row${isDnp ? ' bs-row-dnp' : ''}">
+            <div class="bs-player-cell">
+              <div class="bs-jersey">${escapeHtml(jersey)}</div>
+              <div class="bs-player-info">
+                <span class="bs-name">${escapeHtml(name)}</span>
+                <span class="bs-pos">${escapeHtml(pos || '—')}${pos ? ' · ' : ''}#${escapeHtml(jersey)}</span>
+              </div>
+            </div>
+            <div class="bs-stat">${escapeHtml(min)}</div>
+            <div class="bs-stat">${p.pts ?? 0}</div>
+            <div class="bs-stat">${p.reb ?? 0}</div>
+            <div class="bs-stat">${p.ast ?? 0}</div>
+            <div class="bs-stat">${p.stl ?? 0}</div>
+            <div class="bs-stat">${p.blk ?? 0}</div>
+            <div class="bs-stat ${pmCls}">${pmStr}</div>
+            <div class="bs-stat bs-stat-wide">${fgPct === '—' ? '—' : fgPct}</div>
+            <div class="bs-stat bs-stat-wide">${escapeHtml(fg)}</div>
+            <div class="bs-stat bs-stat-wide">${escapeHtml(tp)}</div>
+            <div class="bs-stat bs-stat-wide">${escapeHtml(ft)}</div>
+            <div class="bs-stat">${p.turnover ?? 0}</div>
+            <div class="bs-stat">${p.pf ?? 0}</div>
+          </div>
         `;
       }).join('');
+
+      // Header row (column labels)
+      const headerRow = `
+        <div class="bs-row bs-row-head">
+          <div class="bs-player-cell"></div>
+          <div class="bs-stat">MIN</div>
+          <div class="bs-stat">PTS</div>
+          <div class="bs-stat">REB</div>
+          <div class="bs-stat">AST</div>
+          <div class="bs-stat">STL</div>
+          <div class="bs-stat">BLK</div>
+          <div class="bs-stat">+/−</div>
+          <div class="bs-stat bs-stat-wide">FG%</div>
+          <div class="bs-stat bs-stat-wide">FG</div>
+          <div class="bs-stat bs-stat-wide">3PT</div>
+          <div class="bs-stat bs-stat-wide">FT</div>
+          <div class="bs-stat">TO</div>
+          <div class="bs-stat">PF</div>
+        </div>
+      `;
+
       return `
-        <div class="gd-team-stats" style="--tc: ${teamObj.tc};">
-          <div class="gd-team-stats-head">
-            <span class="gd-team-stats-dot"></span>
-            <span class="gd-team-stats-name">${escapeHtml(teamObj.name || teamObj.abbr)}</span>
-            <span class="gd-team-stats-score">${score}</span>
+        <div class="bs-team-header" style="--tc: ${teamObj.tc};">
+          <div class="bs-team-logo">${escapeHtml(teamObj.abbr)}</div>
+          <div class="bs-team-info">
+            <div class="bs-team-name-row">
+              <span class="bs-team-name">${escapeHtml(teamObj.name || teamObj.abbr)}</span>
+              <span class="bs-team-score">${score}</span>
+            </div>
+            <div class="bs-team-totals">
+              <div class="bs-total">
+                <span class="bs-total-val">${totFgm}/${totFga}</span>
+                <span class="bs-total-pct">${pct(totFgm, totFga)}</span>
+                <span class="bs-total-label">FG</span>
+              </div>
+              <div class="bs-total">
+                <span class="bs-total-val">${totFg3m}/${totFg3a}</span>
+                <span class="bs-total-pct">${pct(totFg3m, totFg3a)}</span>
+                <span class="bs-total-label">3FG</span>
+              </div>
+              <div class="bs-total">
+                <span class="bs-total-val">${totFtm}/${totFta}</span>
+                <span class="bs-total-pct">${pct(totFtm, totFta)}</span>
+                <span class="bs-total-label">FT</span>
+              </div>
+              <div class="bs-total">
+                <span class="bs-total-val">${totTo}</span>
+                <span class="bs-total-label">TO</span>
+              </div>
+              <div class="bs-total">
+                <span class="bs-total-val">${totReb}</span>
+                <span class="bs-total-label">REB</span>
+              </div>
+              <div class="bs-total">
+                <span class="bs-total-val">${totAst}</span>
+                <span class="bs-total-label">AST</span>
+              </div>
+              <div class="bs-total">
+                <span class="bs-total-val">${totBlk}</span>
+                <span class="bs-total-label">BLK</span>
+              </div>
+              <div class="bs-total">
+                <span class="bs-total-val">${totStl}</span>
+                <span class="bs-total-label">STL</span>
+              </div>
+            </div>
           </div>
-          <table class="gd-stat-table">
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th>MIN</th>
-                <th>PTS</th>
-                <th>REB</th>
-                <th>AST</th>
-                <th class="gd-col-opt">FG</th>
-                <th class="gd-col-opt">3P</th>
-                <th class="gd-col-opt">FT</th>
-              </tr>
-            </thead>
-            <tbody>${rowHtml}</tbody>
-          </table>
+        </div>
+        <div class="bs-table-wrap">
+          <div class="bs-table" style="--tc: ${teamObj.tc};">
+            ${headerRow}
+            ${rowHtml}
+          </div>
         </div>
       `;
     }
 
+    // Build the box-score body: team toggle bar + active team's table.
+    // Default to the away team if no subKey given (or invalid subKey).
+    let boxTeam = awayT;
+    if (subKey === homeT.abbr) boxTeam = homeT;
+    else if (subKey === awayT.abbr) boxTeam = awayT;
+    const boxList = boxTeam === awayT ? awayList : homeList;
+    const boxScore = boxTeam === awayT ? awayScore : homeScore;
+    const teamToggleHtml = `
+      <div class="gd-team-toggle">
+        <a href="#game/${gameId}/box/${awayT.abbr}" class="gd-team-toggle-btn ${boxTeam === awayT ? 'active' : ''}" style="--tc: ${awayT.tc};">${escapeHtml(awayT.abbr)}</a>
+        <a href="#game/${gameId}/box/${homeT.abbr}" class="gd-team-toggle-btn ${boxTeam === homeT ? 'active' : ''}" style="--tc: ${homeT.tc};">${escapeHtml(homeT.abbr)}</a>
+      </div>
+    `;
     const teamStatsBlocks = statsLoading ? `
+      ${teamToggleHtml}
       <div class="gd-loading">Loading box score…</div>
     ` : (statRows && statRows.length) ? `
-      <div class="gd-section">
-        <div class="gd-section-title">Box Score</div>
-        ${teamStatsHtml(awayT, awayScore, awayList)}
-        ${teamStatsHtml(homeT, homeScore, homeList)}
-      </div>
-    ` : `<div class="gd-loading">Player stats not available for this game.</div>`;
+      ${teamToggleHtml}
+      ${teamStatsHtml(boxTeam, boxScore, boxList)}
+    ` : `
+      ${teamToggleHtml}
+      <div class="gd-loading">Player stats not available for this game.</div>
+    `;
 
     // Pool picks bar (shared with Home renderer's logic) — used in pre-game state
     function poolPicksBar() {
@@ -11514,7 +11839,9 @@
         ${poolPicksBar()}
       `;
     } else if (tab === 'box') {
-      tabBody = `${quartersHtml}${leadersHtml()}${teamStatsBlocks}`;
+      // Box tab: just the team toggle + selected team's stats. Quarters and
+      // leaders intentionally removed — full team summary lives at the top of the table.
+      tabBody = teamStatsBlocks;
     } else {
       // 'pbp' default for live/final
       tabBody = `${quartersHtml}<div class="gd-section"><div class="gd-section-title">Play-by-Play</div>${pbpHtml()}</div>`;
@@ -11550,8 +11877,10 @@
         fetchStatsForGame(statsGameId).then(rows => {
           if (rows) boxStats[g.id] = rows;
           if (location.hash.startsWith(`#game/${gameId}`)) {
-            const currentTab = location.hash.split('/')[2] || 'pbp';
-            renderGameDetail(gameId, currentTab);
+            const hashParts = location.hash.split('/');
+            const currentTab = hashParts[2] || 'pbp';
+            const currentSub = hashParts[3] || null;
+            renderGameDetail(gameId, currentTab, currentSub);
           }
         }).catch(err => console.warn('[gd] stats fetch failed', err));
       } catch (e) { /* fetcher may not exist */ }
@@ -11592,8 +11921,10 @@
         if (!pbpGameId) {
           boxPlays[g.id] = { __error: 'Could not find real game ID for this live game. The /games endpoint may be rate-limited — try again in a minute.' };
           if (location.hash.startsWith(`#game/${gameId}`)) {
-            const currentTab = location.hash.split('/')[2] || 'pbp';
-            if (currentTab === 'pbp') renderGameDetail(gameId, currentTab);
+            const hashParts = location.hash.split('/');
+            const currentTab = hashParts[2] || 'pbp';
+            const currentSub = hashParts[3] || null;
+            if (currentTab === 'pbp') renderGameDetail(gameId, currentTab, currentSub);
           }
           return;
         }
@@ -11605,8 +11936,10 @@
             boxPlays[g.id] = { __error: result.error || 'Unknown error' };
           }
           if (location.hash.startsWith(`#game/${gameId}`)) {
-            const currentTab = location.hash.split('/')[2] || 'pbp';
-            if (currentTab === 'pbp') renderGameDetail(gameId, currentTab);
+            const hashParts = location.hash.split('/');
+            const currentTab = hashParts[2] || 'pbp';
+            const currentSub = hashParts[3] || null;
+            if (currentTab === 'pbp') renderGameDetail(gameId, currentTab, currentSub);
           }
         } catch (err) {
           console.warn('[gd] plays fetch failed', err);
