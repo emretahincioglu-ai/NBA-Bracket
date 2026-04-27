@@ -5018,70 +5018,123 @@
   .pbp-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
   }
+  /* Underdog/Action-Network style: each row is a small "card" with
+     headline action, primary actor, optional secondary actor, score. */
   .pbp-row {
     display: grid;
-    grid-template-columns: 4px 50px 1fr auto;
-    gap: 10px;
-    align-items: center;
-    padding: 8px 10px 8px 0;
+    grid-template-columns: 4px 1fr auto;
+    gap: 12px;
+    align-items: stretch;
+    padding: 10px 12px 10px 0;
     background: var(--bg-2);
     border: 1px solid var(--line-soft);
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
     transition: background 0.15s;
+    min-height: 56px;
   }
-  .pbp-row:hover {
-    background: var(--bg-3);
-  }
+  .pbp-row:hover { background: var(--bg-3); }
   .pbp-row-scoring {
-    background: color-mix(in srgb, var(--tc) 8%, var(--bg-2));
-    border-color: color-mix(in srgb, var(--tc) 35%, var(--line-soft));
+    background: color-mix(in srgb, var(--tc) 9%, var(--bg-2));
+    border-color: color-mix(in srgb, var(--tc) 38%, var(--line-soft));
   }
   .pbp-stripe {
     background: var(--tc);
     height: 100%;
     align-self: stretch;
   }
-  .pbp-clock {
+  .pbp-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0; /* allow ellipsis on inner text */
+  }
+  /* Top meta line: clock · period (small, dim) */
+  .pbp-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
+    font-size: 9px;
     color: var(--ink-dim);
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     font-variant-numeric: tabular-nums;
-    text-align: left;
+    text-transform: uppercase;
   }
-  .pbp-text {
+  /* Headline: "13' two", "Missed 26' snipe", "2/2 free throws", "Defensive board" */
+  .pbp-headline {
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    color: var(--ink);
-    line-height: 1.35;
-    overflow: hidden;
-  }
-  .pbp-row-scoring .pbp-text {
-    font-weight: 600;
-  }
-  .pbp-score {
-    font-family: 'Bebas Neue', sans-serif;
     font-size: 14px;
-    color: var(--accent-bright);
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-top: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pbp-row-scoring .pbp-headline {
+    font-weight: 700;
+  }
+  /* Player lines under the headline */
+  .pbp-actor {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pbp-actor-primary {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .pbp-actor-name { color: var(--ink); }
+  .pbp-actor-stat {
+    color: var(--ink-dim);
+    font-size: 10.5px;
+    margin-left: 4px;
+  }
+  /* Right-side score badge */
+  .pbp-score {
+    align-self: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: var(--ink-2);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.04em;
     text-align: right;
     flex-shrink: 0;
-    min-width: 40px;
+    min-width: 50px;
+    line-height: 1;
   }
   .pbp-row-scoring .pbp-score {
     color: var(--ink);
-    text-shadow: 0 0 8px color-mix(in srgb, var(--tc) 50%, transparent);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--tc) 55%, transparent);
+    font-size: 18px;
+  }
+  /* Non-action plays (subs, timeouts) — lighter treatment */
+  .pbp-row-mute {
+    opacity: 0.65;
+    min-height: 38px;
+    padding: 6px 12px 6px 0;
+  }
+  .pbp-row-mute .pbp-headline {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ink-2);
   }
   @media (max-width: 480px) {
-    .pbp-row { grid-template-columns: 3px 42px 1fr auto; gap: 8px; }
-    .pbp-text { font-size: 12px; }
-    .pbp-clock { font-size: 9px; }
-    .pbp-score { font-size: 13px; min-width: 36px; }
+    .pbp-row { grid-template-columns: 3px 1fr auto; gap: 10px; padding: 9px 10px 9px 0; }
+    .pbp-headline { font-size: 13px; }
+    .pbp-actor { font-size: 11px; }
+    .pbp-meta { font-size: 8.5px; }
+    .pbp-score { font-size: 14px; min-width: 44px; }
+    .pbp-row-scoring .pbp-score { font-size: 16px; }
   }
 
   /* ===== Pre-game state in detail view ===== */
@@ -10817,8 +10870,11 @@
       } catch (_) { return ''; }
     }
 
-    // Play-by-play renderer — Apple Sports vibe.
-    // Each play row: team color stripe on left, time + text + score on right
+    // Play-by-play renderer — Underdog/Action-Network condensed style.
+    // Each row shows: team-colored stripe | (clock · period meta line + ultra-short
+    // headline action like "13' two", "Missed 26' snipe", "2/2 free throws") +
+    // (primary actor with their final game stat) + (secondary actor like assister
+    // or rebounder with their final game stat) | running score on right.
     function pbpHtml() {
       const plays = boxPlays[g.id];
       if (!plays) return `<div class="gd-loading">Loading play-by-play…</div>`;
@@ -10830,18 +10886,342 @@
         </div>`;
       }
       if (!Array.isArray(plays) || !plays.length) return `<div class="gd-loading">No play-by-play data available yet.</div>`;
-      // Group by period, NEWEST FIRST
+
+      // Build a player lookup: id -> { shortName, abbr, pts, reb, ast, pf, stl, blk,
+      // fgm, fga, fg3m, fg3a, ftm, fta }. Used to format actor lines with final
+      // game stats. Falls back to {} if box stats haven't loaded yet.
+      const statRowsLocal = boxStats[g.id];
+      const playerLookup = {};
+      const lastNameLookup = {}; // last_name lowercase -> player record (for fallback name parsing)
+      if (Array.isArray(statRowsLocal)) {
+        for (const s of statRowsLocal) {
+          const pl = s.player;
+          if (!pl?.id) continue;
+          const fn = (pl.first_name || '').trim();
+          const ln = (pl.last_name || '').trim();
+          const shortName = fn ? `${fn[0]}. ${ln}` : ln;
+          const rec = {
+            id: pl.id,
+            shortName,
+            firstName: fn,
+            lastName: ln,
+            abbr: s.team?.abbreviation,
+            pts: s.pts ?? 0, reb: s.reb ?? 0, ast: s.ast ?? 0,
+            pf: s.pf ?? 0, stl: s.stl ?? 0, blk: s.blk ?? 0,
+            fgm: s.fgm ?? 0, fga: s.fga ?? 0,
+            fg3m: s.fg3m ?? 0, fg3a: s.fg3a ?? 0,
+            ftm: s.ftm ?? 0, fta: s.fta ?? 0,
+            turnover: s.turnover ?? 0
+          };
+          playerLookup[pl.id] = rec;
+          if (ln) lastNameLookup[ln.toLowerCase()] = rec;
+        }
+      }
+
+      // === Play parser. Returns { headline, primary, secondary, isMute } ===
+      // Strategy: regex against text for common templates, lookup player records
+      // via participants array first, fall back to last-name match in text.
+      // headline = ultra-short label (e.g. "13' two", "Missed 26' snipe", "Defensive board")
+      // primary  = { name, statLabel, statValue }
+      // secondary= same shape, optional
+      // isMute   = true for substitutions, timeouts, jump balls (lighter render)
+      function parsePlay(p) {
+        const text = String(p.text || '').trim();
+        const type = String(p.type || '').trim();
+        const lc = text.toLowerCase();
+        const participants = Array.isArray(p.participants) ? p.participants : [];
+        // Resolve participant records (skip nulls)
+        const partRecs = participants.map(id => playerLookup[id]).filter(Boolean);
+        // Helper: find a participant whose last name appears at a given position in text
+        const findByLastNameInText = (textPart) => {
+          if (!textPart) return null;
+          const lcText = textPart.toLowerCase();
+          for (const rec of partRecs) {
+            if (rec.lastName && lcText.includes(rec.lastName.toLowerCase())) return rec;
+          }
+          // Fallback: any player on either team
+          for (const ln of Object.keys(lastNameLookup)) {
+            if (lcText.includes(ln)) return lastNameLookup[ln];
+          }
+          return null;
+        };
+        // Distance regex: "13-foot" or "26'"
+        const distMatch = text.match(/(\d{1,2})[-\s']?foot/i) || text.match(/(\d{1,2})['′]/);
+        const dist = distMatch ? distMatch[1] : null;
+
+        // === SHOTS ===
+        // Made 3PT: "...makes 26-foot three point shot" or "...makes 3-pt shot"
+        if (lc.includes('three point') || lc.includes('3-pt') || lc.includes('3pt')) {
+          const made = lc.includes(' makes ') || p.scoring_play;
+          const distStr = dist ? `${dist}'` : '';
+          if (made) {
+            // Shooter = first participant, assister (if any) = second
+            const shooter = partRecs[0];
+            const assister = partRecs[1] || (() => {
+              // Some text reads "...(assist by Jones)"
+              const m = text.match(/\(([^)]*)\)/);
+              if (m) {
+                const inner = m[1].toLowerCase();
+                if (inner.includes('assist')) return findByLastNameInText(m[1]);
+              }
+              return null;
+            })();
+            return {
+              headline: distStr ? `${distStr} snipe` : 'Three-pointer',
+              primary: shooter ? {
+                name: shooter.shortName,
+                statLabel: 'pt',
+                statValue: shooter.pts
+              } : null,
+              secondary: assister ? {
+                name: assister.shortName,
+                statLabel: 'ast',
+                statValue: assister.ast
+              } : null
+            };
+          } else {
+            const shooter = partRecs[0];
+            return {
+              headline: distStr ? `Missed ${distStr} snipe` : 'Missed three',
+              primary: shooter ? {
+                name: shooter.shortName,
+                statLabel: '3PT',
+                statValue: `${shooter.fg3m}/${shooter.fg3a}`
+              } : null,
+              secondary: null
+            };
+          }
+        }
+
+        // Made/missed 2PT / dunk / layup / jumper / hook etc
+        if (lc.includes('two point') || lc.includes('2-pt') || lc.includes('dunk') || lc.includes('layup') ||
+            lc.includes('jumper') || lc.includes('hook shot') || lc.includes('tip shot') ||
+            lc.includes('jump shot') || /makes \d/.test(lc) || /misses \d/.test(lc)) {
+          const made = lc.includes(' makes ') || p.scoring_play;
+          const distStr = dist ? `${dist}'` : '';
+          let shotKind = 'two';
+          if (lc.includes('dunk')) shotKind = 'dunk';
+          else if (lc.includes('layup')) shotKind = 'layup';
+          else if (lc.includes('hook')) shotKind = 'hook';
+          else if (lc.includes('tip')) shotKind = 'tip-in';
+          if (made) {
+            const shooter = partRecs[0];
+            const assister = partRecs[1];
+            const headline = (shotKind === 'dunk' || shotKind === 'layup' || shotKind === 'hook' || shotKind === 'tip-in')
+              ? (distStr && shotKind === 'two' ? `${distStr} two` : shotKind.charAt(0).toUpperCase() + shotKind.slice(1))
+              : (distStr ? `${distStr} two` : 'Two-pointer');
+            return {
+              headline,
+              primary: shooter ? {
+                name: shooter.shortName,
+                statLabel: 'pt',
+                statValue: shooter.pts
+              } : null,
+              secondary: assister ? {
+                name: assister.shortName,
+                statLabel: 'ast',
+                statValue: assister.ast
+              } : null
+            };
+          } else {
+            const shooter = partRecs[0];
+            const blocker = partRecs.find(r => r !== shooter && r.abbr !== shooter?.abbr);
+            return {
+              headline: distStr ? `Missed ${distStr} ${shotKind}` : `Missed ${shotKind}`,
+              primary: shooter ? {
+                name: shooter.shortName,
+                statLabel: 'FG',
+                statValue: `${shooter.fgm}/${shooter.fga}`
+              } : null,
+              secondary: (lc.includes('block') && blocker) ? {
+                name: blocker.shortName,
+                statLabel: 'blk',
+                statValue: blocker.blk
+              } : null
+            };
+          }
+        }
+
+        // === FREE THROWS ===
+        // "Brunson makes 2 of 2 free throws" or "Brunson misses free throw 1 of 2"
+        const ftMatch = text.match(/(makes|misses)\s+(?:free throw\s+)?(\d)\s*of\s*(\d)/i);
+        if (ftMatch || lc.includes('free throw')) {
+          const made = ftMatch ? ftMatch[1].toLowerCase() === 'makes' : (lc.includes('makes') && !lc.includes('miss'));
+          const num = ftMatch ? ftMatch[2] : null;
+          const total = ftMatch ? ftMatch[3] : null;
+          const shooter = partRecs[0];
+          // Sometimes a fouled-by player is in participants[1]
+          const fouler = partRecs[1];
+          let headline;
+          if (num && total) headline = `${made ? '' : 'Missed '}${num}/${total} free throws`.trim();
+          else headline = made ? 'Made free throw' : 'Missed free throw';
+          return {
+            headline,
+            primary: shooter ? {
+              name: shooter.shortName,
+              statLabel: made ? 'pt' : 'FT',
+              statValue: made ? shooter.pts : `${shooter.ftm}/${shooter.fta}`
+            } : null,
+            secondary: (fouler && fouler !== shooter) ? {
+              name: fouler.shortName,
+              statLabel: 'foul',
+              statValue: fouler.pf
+            } : null
+          };
+        }
+
+        // === REBOUNDS ===
+        if (lc.includes('rebound')) {
+          const isOff = lc.includes('offensive');
+          const rebounder = partRecs[0];
+          return {
+            headline: isOff ? 'Offensive board' : 'Defensive board',
+            primary: rebounder ? {
+              name: rebounder.shortName,
+              statLabel: 'reb',
+              statValue: rebounder.reb
+            } : null,
+            secondary: null
+          };
+        }
+
+        // === FOULS ===
+        if (lc.includes('foul')) {
+          const fouler = partRecs[0];
+          const drawnBy = partRecs[1];
+          let kind = 'Personal foul';
+          if (lc.includes('shooting')) kind = 'Shooting foul';
+          else if (lc.includes('offensive')) kind = 'Offensive foul';
+          else if (lc.includes('technical')) kind = 'Technical foul';
+          else if (lc.includes('flagrant')) kind = 'Flagrant foul';
+          else if (lc.includes('loose ball')) kind = 'Loose ball foul';
+          return {
+            headline: kind,
+            primary: fouler ? {
+              name: fouler.shortName,
+              statLabel: 'foul',
+              statValue: fouler.pf
+            } : null,
+            secondary: drawnBy ? {
+              name: drawnBy.shortName,
+              statLabel: 'drawn',
+              statValue: null
+            } : null
+          };
+        }
+
+        // === TURNOVERS / STEALS ===
+        if (lc.includes('steal') || lc.includes('steals')) {
+          const stealer = partRecs[0];
+          const loser = partRecs[1];
+          return {
+            headline: 'Steal',
+            primary: stealer ? {
+              name: stealer.shortName,
+              statLabel: 'stl',
+              statValue: stealer.stl
+            } : null,
+            secondary: loser ? {
+              name: loser.shortName,
+              statLabel: 'TO',
+              statValue: loser.turnover
+            } : null
+          };
+        }
+        if (lc.includes('turnover') || lc.includes('lost ball') || lc.includes('bad pass') || lc.includes('traveling') || lc.includes('out of bounds')) {
+          const turner = partRecs[0];
+          let kind = 'Turnover';
+          if (lc.includes('traveling')) kind = 'Travel';
+          else if (lc.includes('bad pass')) kind = 'Bad pass';
+          else if (lc.includes('lost ball')) kind = 'Lost ball';
+          else if (lc.includes('out of bounds')) kind = 'OOB turnover';
+          return {
+            headline: kind,
+            primary: turner ? {
+              name: turner.shortName,
+              statLabel: 'TO',
+              statValue: turner.turnover
+            } : null,
+            secondary: null
+          };
+        }
+
+        // === BLOCKS (standalone) ===
+        if (lc.includes('block')) {
+          const blocker = partRecs[0];
+          return {
+            headline: 'Blocked',
+            primary: blocker ? {
+              name: blocker.shortName,
+              statLabel: 'blk',
+              statValue: blocker.blk
+            } : null,
+            secondary: null
+          };
+        }
+
+        // === MUTED EVENTS (subs, timeouts, jump balls, period markers) ===
+        if (lc.includes('substitution') || lc.startsWith('subs ') || / enters\b/.test(lc) || / leaves\b/.test(lc)) {
+          // Try to extract names — text often "X enters game for Y"
+          const inMatch = text.match(/(.+?)\s+enters/);
+          const outMatch = text.match(/for\s+(.+?)$/);
+          const playerIn = findByLastNameInText(inMatch?.[1]);
+          const playerOut = findByLastNameInText(outMatch?.[1]);
+          let headline = 'Substitution';
+          if (playerIn && playerOut) headline = `Sub: ${playerIn.shortName} in for ${playerOut.shortName}`;
+          else if (playerIn) headline = `${playerIn.shortName} in`;
+          return { headline, primary: null, secondary: null, isMute: true };
+        }
+        if (lc.includes('timeout')) {
+          return { headline: 'Timeout', primary: null, secondary: null, isMute: true };
+        }
+        if (lc.includes('jump ball') || lc.includes('jumpball')) {
+          return { headline: 'Jump ball', primary: null, secondary: null, isMute: true };
+        }
+        if (lc.includes('end of') || lc.startsWith('start of') || lc.includes('begins')) {
+          return { headline: text.replace(/^./, c => c.toUpperCase()), primary: null, secondary: null, isMute: true };
+        }
+        if (lc.includes('violation')) {
+          const player = partRecs[0];
+          return {
+            headline: 'Violation',
+            primary: player ? { name: player.shortName, statLabel: '', statValue: null } : null,
+            secondary: null,
+            isMute: true
+          };
+        }
+        if (lc.includes('ejection')) {
+          return { headline: 'Ejection', primary: partRecs[0] ? { name: partRecs[0].shortName, statLabel: '', statValue: null } : null, secondary: null };
+        }
+
+        // FALLBACK: just show the raw text, no actor lines
+        return { headline: text, primary: null, secondary: null, isMute: !p.shooting_play && !p.scoring_play };
+      }
+
+      // Group by period, NEWEST FIRST within each period
       const byPeriod = {};
       plays.forEach(p => {
         const period = p.period || 1;
         if (!byPeriod[period]) byPeriod[period] = [];
         byPeriod[period].push(p);
       });
-      // Sort periods descending
       const periodKeys = Object.keys(byPeriod).map(n => +n).sort((a, b) => b - a);
-      // Get team abbr for each play's team (api side, then map to series side)
       const apiHomeAbb = g.home_team?.abbreviation;
       const periodLabel = (n) => n <= 4 ? `Q${n}` : `OT${n - 4}`;
+
+      // Helper: render an actor line
+      const actorLine = (actor, isPrimary) => {
+        if (!actor) return '';
+        const cls = isPrimary ? 'pbp-actor pbp-actor-primary' : 'pbp-actor';
+        let stat = '';
+        if (actor.statValue !== null && actor.statValue !== undefined && actor.statValue !== '') {
+          stat = `<span class="pbp-actor-stat">· ${escapeHtml(String(actor.statValue))}${actor.statLabel ? ' ' + escapeHtml(actor.statLabel) : ''}</span>`;
+        } else if (actor.statLabel) {
+          stat = `<span class="pbp-actor-stat">· ${escapeHtml(actor.statLabel)}</span>`;
+        }
+        return `<div class="${cls}"><span class="pbp-actor-name">${escapeHtml(actor.name)}</span>${stat}</div>`;
+      };
+
       let html = '';
       for (const period of periodKeys) {
         const periodPlays = [...byPeriod[period]].reverse(); // newest first within quarter
@@ -10858,13 +11238,25 @@
           const apiHomeIsSeriesHome = apiHomeAbb === seriesHomeAbbr;
           const dispHome = apiHomeIsSeriesHome ? p.home_score : p.away_score;
           const dispAway = apiHomeIsSeriesHome ? p.away_score : p.home_score;
-          const scoreStr = (p.home_score != null && p.away_score != null) ? `${dispAway}-${dispHome}` : '';
+          const scoreStr = (p.home_score != null && p.away_score != null) ? `${dispAway}–${dispHome}` : '';
           const isScoring = !!p.scoring_play;
+
+          const parsed = parsePlay(p);
+          const muteCls = parsed.isMute ? ' pbp-row-mute' : '';
+          const scoringCls = isScoring ? ' pbp-row-scoring' : '';
+          const clockStr = (p.clock || '').trim();
+          const metaPieces = [];
+          if (clockStr) metaPieces.push(clockStr);
+          metaPieces.push(periodLabel(period));
           html += `
-            <div class="pbp-row${isScoring ? ' pbp-row-scoring' : ''}" style="--tc: ${teamColor};">
+            <div class="pbp-row${scoringCls}${muteCls}" style="--tc: ${teamColor};">
               <div class="pbp-stripe"></div>
-              <div class="pbp-clock">${escapeHtml(p.clock || '')}</div>
-              <div class="pbp-text">${escapeHtml(p.text || '')}</div>
+              <div class="pbp-body">
+                <div class="pbp-meta">${metaPieces.map(escapeHtml).join(' · ')}</div>
+                <div class="pbp-headline">${escapeHtml(parsed.headline || '')}</div>
+                ${actorLine(parsed.primary, true)}
+                ${actorLine(parsed.secondary, false)}
+              </div>
               <div class="pbp-score">${escapeHtml(scoreStr)}</div>
             </div>
           `;
