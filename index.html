@@ -1431,7 +1431,7 @@
 
   /* CONTAINER */
   .container {
-    max-width: 1200px;
+    max-width: 640px;
     margin: 0 auto;
     padding: 24px 16px 60px;
   }
@@ -2606,33 +2606,61 @@
     border-radius: 6px;
     overflow: hidden;
     margin: 4px 0;
-    min-height: 64px;
+    min-height: 80px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 -1px 0 rgba(0,0,0,0.4) inset,
+      0 4px 12px rgba(0,0,0,0.4);
   }
   .sc-board-panel {
     display: grid;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 10px;
+    padding: 10px 14px;
     position: relative;
     background:
       linear-gradient(135deg,
-        color-mix(in srgb, var(--tc) 75%, #000) 0%,
-        color-mix(in srgb, var(--tc) 55%, #000) 100%);
+        color-mix(in srgb, var(--tc) 80%, #000) 0%,
+        color-mix(in srgb, var(--tc) 50%, #000) 60%,
+        color-mix(in srgb, var(--tc) 35%, #000) 100%);
+    overflow: hidden;
+  }
+  /* Diagonal shine highlight on each panel */
+  .sc-board-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.12), transparent);
+    pointer-events: none;
+  }
+  /* Glow under the leading team */
+  .sc-board-panel.leading {
+    box-shadow:
+      inset 0 0 30px rgba(255,255,255,0.08),
+      inset 0 0 0 1px rgba(255,255,255,0.18);
+  }
+  .sc-board-panel.leading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08), transparent 70%);
+    pointer-events: none;
   }
   .sc-board-away {
-    grid-template-columns: 14px 28px 1fr;
+    grid-template-columns: 14px 32px 1fr;
     text-align: left;
   }
   .sc-board-home {
-    grid-template-columns: 1fr 28px 14px;
+    grid-template-columns: 1fr 32px 14px;
     text-align: right;
   }
   /* Vertical-text abbreviation tab on the outer edge */
   .sc-board-abbr {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    color: rgba(255,255,255,0.55);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.6);
     writing-mode: vertical-lr;
     transform: rotate(180deg);
     line-height: 1;
@@ -2641,38 +2669,52 @@
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
+    position: relative;
+    z-index: 1;
   }
   .sc-board-home .sc-board-abbr {
     transform: rotate(180deg);
     writing-mode: vertical-lr;
   }
   .sc-board-logo {
-    width: 28px; height: 28px;
+    width: 32px; height: 32px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,0.95);
+    background: rgba(255,255,255,0.97);
     color: #000;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    box-shadow:
+      0 2px 6px rgba(0,0,0,0.5),
+      0 0 0 2px rgba(255,255,255,0.12);
     letter-spacing: 0;
+    position: relative;
+    z-index: 1;
   }
   .sc-board-score {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 32px;
+    font-size: 38px;
     line-height: 1;
     color: #fff;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    text-shadow:
+      0 2px 8px rgba(0,0,0,0.6),
+      0 0 24px rgba(255,255,255,0.1);
+    position: relative;
+    z-index: 1;
+    font-weight: 400;
   }
   .sc-board-panel.leading .sc-board-score {
     color: #fff;
+    text-shadow:
+      0 2px 8px rgba(0,0,0,0.7),
+      0 0 28px rgba(255,255,255,0.25);
   }
   .sc-board-panel:not(.leading) .sc-board-score {
-    color: rgba(255,255,255,0.78);
+    color: rgba(255,255,255,0.7);
   }
 
   /* Center clock/period column */
@@ -2681,48 +2723,56 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0 12px;
-    background: #0a0a0a;
-    min-width: 60px;
-    gap: 2px;
+    padding: 0 14px;
+    background:
+      linear-gradient(180deg, #0a0a0a 0%, #050505 50%, #0a0a0a 100%);
+    min-width: 70px;
+    gap: 3px;
+    position: relative;
+    box-shadow:
+      inset 1px 0 0 rgba(0,0,0,0.5),
+      inset -1px 0 0 rgba(0,0,0,0.5);
   }
   .sc-board-clock {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    color: var(--ink);
+    font-size: 22px;
+    color: #fff;
     line-height: 1;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 12px rgba(255, 100, 100, 0.4);
   }
   .sc-board-period {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    color: var(--ink-2);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent-bright);
     font-weight: 700;
   }
 
   /* Bottom strip: round + series standing */
   .sc-board-bottom {
     text-align: center;
-    padding: 6px 8px 8px;
+    padding: 7px 8px 9px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     color: var(--ink-2);
     font-weight: 700;
     text-transform: uppercase;
     border-top: 1px solid rgba(196, 178, 152, 0.12);
+    background: rgba(0,0,0,0.4);
   }
 
   @media (max-width: 480px) {
-    .sc-board { min-height: 56px; }
-    .sc-board-score { font-size: 28px; }
-    .sc-board-logo { width: 24px; height: 24px; font-size: 9px; }
-    .sc-board-clock { font-size: 16px; }
-    .sc-board-center { padding: 0 8px; min-width: 50px; }
-    .sc-board-away { grid-template-columns: 10px 24px 1fr; }
-    .sc-board-home { grid-template-columns: 1fr 24px 10px; }
+    .sc-board { min-height: 64px; }
+    .sc-board-score { font-size: 30px; }
+    .sc-board-logo { width: 26px; height: 26px; font-size: 9px; }
+    .sc-board-clock { font-size: 18px; }
+    .sc-board-period { font-size: 9px; }
+    .sc-board-center { padding: 0 10px; min-width: 56px; }
+    .sc-board-away { grid-template-columns: 10px 26px 1fr; padding: 8px 10px; }
+    .sc-board-home { grid-template-columns: 1fr 26px 10px; padding: 8px 10px; }
     .sc-board-abbr { font-size: 10px; }
     .sc-board-bottom { font-size: 8px; letter-spacing: 0.15em; }
   }
@@ -7345,10 +7395,14 @@
       return;
     }
 
-    // Use the already-deduped rows from above. When a fallback was triggered,
-    // rows contains yestFinalRows; otherwise it's liveRows + todayFinalRows + scheduledRows.
+    // Use the already-deduped rows from above.
+    // Always show: today's live + today's finals + yesterday's finals + today's scheduled.
+    // (The previous logic hid yesterday's finals when there was a live game today —
+    // bringing them back so users always see recent results.)
     const liveRowsToShow = usingFallback ? [] : liveRows;
-    const finalRowsToShow = usingFallback ? yestFinalRows : todayFinalRows;
+    const finalRowsToShow = usingFallback
+      ? yestFinalRows
+      : [...todayFinalRows, ...yestFinalRows];
     const scheduledRowsToShow = usingFallback ? [] : scheduledRows;
 
     const liveHtml = liveRowsToShow.map(r => renderHeroScorecard(r, today)).join('');
@@ -10848,10 +10902,12 @@
       ${tabBody}
     `;
 
-    // If on box-score tab and stats aren't loaded yet, kick off fetch
-    if (tab === 'box' && statsLoading && typeof fetchStatsForGame === 'function') {
+    // If on box-score tab and stats aren't loaded yet, kick off fetch.
+    // Use real numeric game_id (synthetic string IDs would fail the API).
+    const statsGameId = g.real_game_id || (typeof g.id === 'number' ? g.id : null);
+    if (tab === 'box' && statsLoading && statsGameId && typeof fetchStatsForGame === 'function') {
       try {
-        fetchStatsForGame(g.id).then(rows => {
+        fetchStatsForGame(statsGameId).then(rows => {
           if (rows) boxStats[g.id] = rows;
           if (location.hash.startsWith(`#game/${gameId}`)) {
             const currentTab = location.hash.split('/')[2] || 'pbp';
@@ -10860,22 +10916,30 @@
         }).catch(err => console.warn('[gd] stats fetch failed', err));
       } catch (e) { /* fetcher may not exist */ }
     }
-    // If on pbp tab and plays aren't loaded yet, kick off fetch
+    // If on pbp tab and plays aren't loaded yet, kick off fetch.
+    // IMPORTANT: PBP endpoint requires the REAL numeric game_id, not our synthetic
+    // string ID (e.g. "live-2026-04-26-HOU@LAL"). Live-game records carry the
+    // real id in g.real_game_id. Final-game records have a numeric id directly.
+    const pbpGameId = g.real_game_id || (typeof g.id === 'number' ? g.id : null);
     if (tab === 'pbp' && (isLive || isFinal) && !boxPlays[g.id] && typeof fetchPlaysForGame === 'function') {
-      try {
-        fetchPlaysForGame(g.id).then(result => {
-          if (result.plays) {
-            boxPlays[g.id] = result.plays;
-          } else {
-            // Mark as attempted with error so we don't loop, store error for display
-            boxPlays[g.id] = { __error: result.error || 'Unknown error' };
-          }
-          if (location.hash.startsWith(`#game/${gameId}`)) {
-            const currentTab = location.hash.split('/')[2] || 'pbp';
-            if (currentTab === 'pbp') renderGameDetail(gameId, currentTab);
-          }
-        }).catch(err => console.warn('[gd] plays fetch failed', err));
-      } catch (e) { /* fetcher may not exist */ }
+      if (!pbpGameId) {
+        // Can't fetch — mark error so user sees a useful message
+        boxPlays[g.id] = { __error: 'Real game ID not yet available for this live game. Refresh in a moment.' };
+      } else {
+        try {
+          fetchPlaysForGame(pbpGameId).then(result => {
+            if (result.plays) {
+              boxPlays[g.id] = result.plays;
+            } else {
+              boxPlays[g.id] = { __error: result.error || 'Unknown error' };
+            }
+            if (location.hash.startsWith(`#game/${gameId}`)) {
+              const currentTab = location.hash.split('/')[2] || 'pbp';
+              if (currentTab === 'pbp') renderGameDetail(gameId, currentTab);
+            }
+          }).catch(err => console.warn('[gd] plays fetch failed', err));
+        } catch (e) { /* fetcher may not exist */ }
+      }
     }
   }
 
