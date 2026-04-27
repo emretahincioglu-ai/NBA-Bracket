@@ -4676,7 +4676,7 @@
   .gd-hsc-team-away { flex-direction: row; }
   .gd-hsc-team-home { flex-direction: row-reverse; }
   .gd-hsc-logo {
-    width: 26px; height: 26px;
+    width: 32px; height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -4685,14 +4685,14 @@
     border: 1.5px solid var(--tc);
     color: var(--tc);
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     flex-shrink: 0;
     letter-spacing: 0;
   }
   .gd-hsc-score {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
+    font-size: 28px;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
@@ -4722,8 +4722,8 @@
     animation: livePulse 1.6s infinite;
   }
   @media (max-width: 480px) {
-    .gd-hsc-logo { width: 22px; height: 22px; font-size: 8.5px; }
-    .gd-hsc-score { font-size: 18px; }
+    .gd-hsc-logo { width: 28px; height: 28px; font-size: 10px; }
+    .gd-hsc-score { font-size: 24px; }
     .gd-hsc-status { font-size: 9px; min-width: 40px; }
     .gd-header-scoreboard { gap: 8px; }
   }
@@ -5170,11 +5170,10 @@
     min-width: 184px;
     flex-shrink: 0;
     border-right: 1px solid var(--line);
+    align-self: stretch; /* fills row height so sticky bg fully covers scrolling content */
   }
   .bs-row-head .bs-player-cell {
     background: var(--bg);
-    padding-top: 0;
-    padding-bottom: 6px;
   }
   .bs-jersey {
     width: 30px; height: 30px;
@@ -5226,6 +5225,11 @@
     padding: 8px 4px;
   }
   .bs-stat.bs-stat-wide { width: 64px; }
+  /* Vertical divider after MIN, separating it from main per-game stats */
+  .bs-stat.bs-stat-divider {
+    border-right: 1px solid var(--line);
+    margin-right: 4px;
+  }
   .bs-row-head .bs-stat {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9.5px;
@@ -5233,7 +5237,7 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     font-weight: 700;
-    padding: 0 4px 6px;
+    padding: 8px 4px;
   }
   /* +/- coloring */
   .bs-stat.bs-pos-plus { color: #4ade80; }
@@ -11035,19 +11039,16 @@
     }
   }
 
-  // Wire back button: navigate back in history (or clear hash if no history)
+  // Wire Home button: ALWAYS goes straight back to home (clears hash entirely).
+  // This is intentionally NOT history.back() — that would step through
+  // intermediate game/tab/team navigations the user took within the detail view.
   document.addEventListener('DOMContentLoaded', () => {
     const back = document.getElementById('gdBackBtn');
     if (back) {
       back.addEventListener('click', () => {
         if (location.hash.startsWith('#game/')) {
-          // Clear the hash. Use history.back() if we can, fallback to replaceState.
-          if (history.length > 1 && document.referrer.includes(location.host)) {
-            history.back();
-          } else {
-            history.replaceState(null, '', location.pathname + location.search);
-            handleRoute();
-          }
+          history.replaceState(null, '', location.pathname + location.search);
+          handleRoute();
         }
       });
     }
@@ -11275,7 +11276,7 @@
                 <span class="bs-pos">${escapeHtml(pos || '—')}${pos ? ' · ' : ''}#${escapeHtml(jersey)}</span>
               </div>
             </div>
-            <div class="bs-stat">${escapeHtml(min)}</div>
+            <div class="bs-stat bs-stat-divider">${escapeHtml(min)}</div>
             <div class="bs-stat">${p.pts ?? 0}</div>
             <div class="bs-stat">${p.reb ?? 0}</div>
             <div class="bs-stat">${p.ast ?? 0}</div>
@@ -11296,7 +11297,7 @@
       const headerRow = `
         <div class="bs-row bs-row-head">
           <div class="bs-player-cell"></div>
-          <div class="bs-stat">MIN</div>
+          <div class="bs-stat bs-stat-divider">MIN</div>
           <div class="bs-stat">PTS</div>
           <div class="bs-stat">REB</div>
           <div class="bs-stat">AST</div>
