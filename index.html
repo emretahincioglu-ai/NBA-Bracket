@@ -5562,6 +5562,104 @@
     color: var(--accent-bright);
   }
 
+  /* ============ MATCH PREVIEW (upcoming game detail) ============ */
+  .preview-series {
+    background: var(--bg-2);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 0;
+  }
+  .preview-series-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    background: rgba(196, 178, 152, 0.04);
+  }
+  .preview-game-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+  }
+  .preview-lead {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--accent-bright);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .preview-recent {
+    display: flex;
+    flex-direction: column;
+  }
+  .preview-recent-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 60px;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .preview-recent-row:last-child {
+    border-bottom: none;
+  }
+  .preview-recent-game {
+    color: var(--ink-dim);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  .preview-recent-score {
+    color: var(--ink-2);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .preview-recent-score .win {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .preview-recent-sep {
+    color: var(--ink-dim);
+    opacity: 0.5;
+  }
+  .preview-recent-winner {
+    color: var(--ok);
+    text-align: right;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+  }
+
+  /* Tipoff hero — big, dramatic */
+  .preview-tipoff {
+    background: linear-gradient(135deg, rgba(196, 178, 152, 0.06), rgba(196, 178, 152, 0.02));
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    padding: 24px 16px;
+    text-align: center;
+  }
+  .preview-tipoff-day {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .preview-tipoff-time {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    line-height: 1;
+  }
   /* ============ HOME GAME GRID (2-col on phone, 1-col tiny screens) ============ */
   .game-grid {
     display: grid;
@@ -7862,13 +7960,13 @@
     }
 
     // Use the already-deduped rows from above.
-    // Always show: today's live + today's finals + yesterday's finals + today's scheduled.
-    // (The previous logic hid yesterday's finals when there was a live game today —
-    // bringing them back so users always see recent results.)
+    // On the "today" tab: show today's live + today's finals + today's scheduled.
+    // Yesterday's finals ONLY appear as a fallback when nothing happened today —
+    // otherwise they bleed into the list and confuse the date filter.
     const liveRowsToShow = usingFallback ? [] : liveRows;
     const finalRowsToShow = usingFallback
       ? yestFinalRows
-      : [...todayFinalRows, ...yestFinalRows];
+      : todayFinalRows;
     const scheduledRowsToShow = usingFallback ? [] : scheduledRows;
 
     const liveHtml = liveRowsToShow.map(r => renderHeroScorecard(r, today)).join('');
@@ -11147,6 +11245,36 @@
     const awayList = byTeam[awayT.abbr] || [];
     const homeList = byTeam[homeT.abbr] || [];
 
+    // Pretty tipoff for the hero status bar (used in scheduled state)
+    let heroSchedText = 'SCHEDULED';
+    {
+      const tipRaw = g.datetime || g.status || '';
+      const tipIso = /T\d\d:\d\d/.test(tipRaw) ? tipRaw : null;
+      if (tipIso) {
+        try {
+          const dt = new Date(tipIso);
+          if (!isNaN(dt.getTime())) {
+            const today = new Date();
+            const tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
+            const sameDay = (a, b) =>
+              a.getFullYear() === b.getFullYear() &&
+              a.getMonth() === b.getMonth() &&
+              a.getDate() === b.getDate();
+            const dayLabel = sameDay(dt, today) ? 'TONIGHT'
+              : sameDay(dt, tomorrow) ? 'TOMORROW'
+              : dt.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' }).toUpperCase();
+            const timeStr = dt.toLocaleTimeString('en-US', {
+              timeZone: 'America/New_York',
+              hour: 'numeric', minute: '2-digit', hour12: true
+            }).replace(' ', '').toUpperCase() + ' ET';
+            heroSchedText = `${dayLabel} · ${timeStr}`;
+          }
+        } catch (_) { /* keep default */ }
+      } else if (tipRaw) {
+        heroSchedText = String(tipRaw).toUpperCase();
+      }
+    }
+
     // Hero status bar
     const statusBarHtml = isLive ? `
       <div class="gd-hero-status-bar">
@@ -11159,7 +11287,7 @@
       </div>
     ` : `
       <div class="gd-hero-status-bar final">
-        <span>SCHEDULED · ${escapeHtml(g.status || '')}</span>
+        <span>${escapeHtml(heroSchedText)}</span>
       </div>
     `;
 
@@ -11835,12 +11963,106 @@
     // Tab body content
     let tabBody = '';
     if (isUpcoming) {
-      // Pre-game: show pool picks + tipoff info
-      tabBody = `
-        <div class="gd-section">
-          <div class="gd-section-title">Tip-off</div>
-          <div class="gd-pregame-tip">${escapeHtml(g.status || g.datetime || 'Time TBD')}</div>
+      // ============ UPGRADED MATCH PREVIEW ============
+      // Format tipoff time nicely instead of raw ISO string.
+      // Build series context (e.g. "Series tied 1-1"), recent results, and pool picks.
+
+      // 1) Pretty tipoff string
+      const tipRaw = g.datetime || g.status || '';
+      const tipIso = /T\d\d:\d\d/.test(tipRaw) ? tipRaw : null;
+      let tipPretty = String(tipRaw).toUpperCase();
+      let tipDay = '';
+      if (tipIso) {
+        try {
+          const dt = new Date(tipIso);
+          if (!isNaN(dt.getTime())) {
+            const today = new Date();
+            const tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
+            const sameDay = (a, b) =>
+              a.getFullYear() === b.getFullYear() &&
+              a.getMonth() === b.getMonth() &&
+              a.getDate() === b.getDate();
+            const dayLabel = sameDay(dt, today) ? 'TONIGHT'
+              : sameDay(dt, tomorrow) ? 'TOMORROW'
+              : dt.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long' }).toUpperCase();
+            const timeStr = dt.toLocaleTimeString('en-US', {
+              timeZone: 'America/New_York',
+              hour: 'numeric', minute: '2-digit', hour12: true
+            }).replace(' ', '').toUpperCase() + ' ET';
+            tipPretty = timeStr;
+            tipDay = dayLabel;
+          }
+        } catch (_) { /* fall through */ }
+      }
+
+      // 2) Series context — leverage existing computeSeriesStatus + game log
+      let seriesContextHtml = '';
+      if (series) {
+        const games = Array.isArray(series.games) ? series.games : [];
+        const wins = { [series.home]: 0, [series.away]: 0 };
+        games.forEach(ge => { if (ge.winner && wins[ge.winner] !== undefined) wins[ge.winner]++; });
+        const homeW = wins[series.home] || 0;
+        const awayW = wins[series.away] || 0;
+        const homeAbbrSeries = getTeam(series.home).abbr;
+        const awayAbbrSeries = getTeam(series.away).abbr;
+        const gameNum = games.length + 1;
+
+        let leadText = '';
+        if (homeW === 0 && awayW === 0) {
+          leadText = 'Series begins';
+        } else if (homeW === awayW) {
+          leadText = `Series tied ${homeW}–${awayW}`;
+        } else if (homeW > awayW) {
+          leadText = `${homeAbbrSeries} leads ${homeW}–${awayW}`;
+        } else {
+          leadText = `${awayAbbrSeries} leads ${awayW}–${homeW}`;
+        }
+
+        // Recent results — last up to 3 games
+        const recent = games.slice(-3);
+        const recentHtml = recent.length ? `
+          <div class="preview-recent">
+            ${recent.map(ge => {
+              const winnerAbbr = getTeam(ge.winner).abbr;
+              const homeScore = ge.hs ?? '—';
+              const awayScore = ge.as ?? '—';
+              return `
+                <div class="preview-recent-row">
+                  <div class="preview-recent-game">G${ge.g}</div>
+                  <div class="preview-recent-score">
+                    <span class="${ge.winner === series.away ? 'win' : ''}">${awayAbbrSeries} ${awayScore}</span>
+                    <span class="preview-recent-sep">·</span>
+                    <span class="${ge.winner === series.home ? 'win' : ''}">${homeAbbrSeries} ${homeScore}</span>
+                  </div>
+                  <div class="preview-recent-winner">${winnerAbbr} W</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : '';
+
+        seriesContextHtml = `
+          <div class="gd-section preview-series">
+            <div class="preview-series-head">
+              <div class="preview-game-num">Game ${gameNum}</div>
+              <div class="preview-lead">${escapeHtml(leadText)}</div>
+            </div>
+            ${recentHtml}
+          </div>
+        `;
+      }
+
+      // 3) Tip-off card — pretty format
+      const tipoffCardHtml = `
+        <div class="gd-section preview-tipoff">
+          <div class="preview-tipoff-day">${escapeHtml(tipDay || 'TIP-OFF')}</div>
+          <div class="preview-tipoff-time">${escapeHtml(tipPretty)}</div>
         </div>
+      `;
+
+      tabBody = `
+        ${seriesContextHtml}
+        ${tipoffCardHtml}
         ${poolPicksBar()}
       `;
     } else if (tab === 'box') {
