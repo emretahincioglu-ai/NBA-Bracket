@@ -6977,20 +6977,24 @@
   // Only future games from "today" forward. Remove rows as games finish.
   // ====================================================================
   const SCHEDULE = [
-    // Friday April 24 — Game 3s
-    { date: '2026-04-24', time: '7:00 PM ET',   home: '76ers',        away: 'Celtics',      game: 'G3' },
-    { date: '2026-04-24', time: '8:00 PM ET',   home: 'Rockets',      away: 'Lakers',       game: 'G3' },
-    { date: '2026-04-24', time: '10:30 PM ET',  home: 'Trail Blazers',away: 'Spurs',        game: 'G3' },
+    // ============ CONFERENCE FINALS ============
+    // West Conf Finals (Spurs vs Thunder) — starts Monday May 18
+    { date: '2026-05-18', time: '8:30 PM ET',   home: 'Thunder',      away: 'Spurs',        game: 'G1' },
+    { date: '2026-05-20', time: '8:30 PM ET',   home: 'Thunder',      away: 'Spurs',        game: 'G2' },
+    { date: '2026-05-22', time: '8:30 PM ET',   home: 'Spurs',        away: 'Thunder',      game: 'G3' },
+    { date: '2026-05-24', time: '8:30 PM ET',   home: 'Spurs',        away: 'Thunder',      game: 'G4' },
+    { date: '2026-05-26', time: '8:30 PM ET',   home: 'Thunder',      away: 'Spurs',        game: 'G5' },
+    { date: '2026-05-28', time: '8:30 PM ET',   home: 'Spurs',        away: 'Thunder',      game: 'G6' },
+    { date: '2026-05-30', time: '8:30 PM ET',   home: 'Thunder',      away: 'Spurs',        game: 'G7' },
 
-    // Saturday April 25
-    { date: '2026-04-25', time: '1:00 PM ET',   home: 'Magic',        away: 'Pistons',      game: 'G3' },
-    { date: '2026-04-25', time: '3:30 PM ET',   home: 'Suns',         away: 'Thunder',      game: 'G3' },
-    { date: '2026-04-25', time: '6:00 PM ET',   home: 'Hawks',        away: 'Knicks',       game: 'G4' },
-    { date: '2026-04-25', time: '8:30 PM ET',   home: 'Timberwolves', away: 'Nuggets',      game: 'G4' },
-
-    // Sunday April 26
-    { date: '2026-04-26', time: '1:00 PM ET',   home: 'Raptors',      away: 'Cavaliers',    game: 'G4' },
-    { date: '2026-04-26', time: '3:30 PM ET',   home: 'Trail Blazers',away: 'Spurs',        game: 'G4' }
+    // East Conf Finals (Cavaliers vs Knicks) — starts Tuesday May 19
+    { date: '2026-05-19', time: '8:00 PM ET',   home: 'Knicks',       away: 'Cavaliers',    game: 'G1' },
+    { date: '2026-05-21', time: '8:00 PM ET',   home: 'Knicks',       away: 'Cavaliers',    game: 'G2' },
+    { date: '2026-05-23', time: '8:30 PM ET',   home: 'Cavaliers',    away: 'Knicks',       game: 'G3' },
+    { date: '2026-05-25', time: '8:30 PM ET',   home: 'Cavaliers',    away: 'Knicks',       game: 'G4' },
+    { date: '2026-05-27', time: '8:00 PM ET',   home: 'Knicks',       away: 'Cavaliers',    game: 'G5' },
+    { date: '2026-05-29', time: '8:30 PM ET',   home: 'Cavaliers',    away: 'Knicks',       game: 'G6' },
+    { date: '2026-05-31', time: '8:00 PM ET',   home: 'Knicks',       away: 'Cavaliers',    game: 'G7' }
   ];
 
   // Back-compat alias — some older code still references UPCOMING_GAMES
@@ -8006,9 +8010,13 @@
     // propagate winner/length into `results` (which drives the leaderboard).
     try { await autoSyncResultsFromSeries(); }
     catch (e) { console.warn('[auto-sync] failed:', e); }
-    // If R1 just finished, materialize R2 matchups into SERIES.
+    // Materialize the next round's matchups into SERIES as soon as prior rounds finish.
     try { extendSeriesWithRound2(); }
     catch (e) { console.warn('[r2] extend failed:', e); }
+    try { extendSeriesWithRound3(); }
+    catch (e) { console.warn('[r3] extend failed:', e); }
+    try { extendSeriesWithRound4(); }
+    catch (e) { console.warn('[r4] extend failed:', e); }
     const interval = result.anyLive ? 90 * 1000 : 5 * 60 * 1000;
     pollTimer = setTimeout(runPoll, interval);
   }
@@ -9911,17 +9919,25 @@
       `;
     }
 
-    // Round 1 — skipped (R1 finished, focus is on R2 onward)
-    // To re-enable, uncomment:
-    // if (byRound[1].length) {
-    //   html += `<div class="round-section-divider"><span class="round-section-label">ROUND 1 · CONFERENCE QUARTERFINALS</span></div>`;
-    //   byRound[1].forEach(s => { html += renderCard(s, 'round1', 'Round 1'); });
+    // Past rounds skipped — focus is on the CURRENT active round.
+    // To show prior rounds for reference, uncomment the relevant blocks.
+
+    // Round 2 — skipped (R2 finished)
+    // if (byRound[2].length) {
+    //   html += `<div class="round-section-divider"><span class="round-section-label">ROUND 2 · CONFERENCE SEMIFINALS</span></div>`;
+    //   byRound[2].forEach(s => { html += renderCard(s, 'round2', 'Round 2'); });
     // }
 
-    // Round 2
-    if (byRound[2].length) {
-      html += `<div class="round-section-divider"><span class="round-section-label">ROUND 2 · CONFERENCE SEMIFINALS</span></div>`;
-      byRound[2].forEach(s => { html += renderCard(s, 'round2', 'Round 2'); });
+    // Round 3 — Conference Finals
+    if (byRound[3].length) {
+      html += `<div class="round-section-divider"><span class="round-section-label">CONFERENCE FINALS</span></div>`;
+      byRound[3].forEach(s => { html += renderCard(s, 'round3', 'Conf Finals'); });
+    }
+
+    // Round 4 — NBA Finals
+    if (byRound[4].length) {
+      html += `<div class="round-section-divider"><span class="round-section-label">★ NBA FINALS ★</span></div>`;
+      byRound[4].forEach(s => { html += renderCard(s, 'round4', 'NBA Finals'); });
     }
 
     list.innerHTML = html;
@@ -10230,6 +10246,78 @@
       SERIES.push(newSeries);
       console.log(`[r2] added ${def.id}: ${awayWinner} @ ${homeWinner}`);
     });
+  }
+
+  // ============================================================
+  // EXTEND SERIES WITH ROUND 3 (Conference Finals)
+  // Once all 4 R2 series have winners in `results.round2`, derive
+  // the 2 R3 matchups (ECF, WCF) and push them into SERIES.
+  // R3 mapping (from bracket.html getNextRoundMatchForSeries):
+  //   ECF = winner(EE1) vs winner(EE2)
+  //   WCF = winner(WW1) vs winner(WW2)
+  // Idempotent — if R3 series already exist they're left alone.
+  // ============================================================
+  function extendSeriesWithRound3() {
+    if (!results || !results.round2) return;
+    const r2 = results.round2;
+    const r2Required = ['EE1','EE2','WW1','WW2'];
+    const allDone = r2Required.every(sid => r2[sid]?.winner);
+    if (!allDone) return;
+
+    const r3Ids = ['ECF','WCF'];
+    const alreadyHas = r3Ids.some(id => SERIES.find(s => s.id === id));
+    if (alreadyHas) return;
+
+    const r3Defs = [
+      { id: 'ECF', conf: 'east', parents: ['EE1', 'EE2'], seeds: 'EAST FINALS' },
+      { id: 'WCF', conf: 'west', parents: ['WW1', 'WW2'], seeds: 'WEST FINALS' }
+    ];
+
+    r3Defs.forEach(def => {
+      const homeWinner = r2[def.parents[0]]?.winner;
+      const awayWinner = r2[def.parents[1]]?.winner;
+      if (!homeWinner || !awayWinner) return;
+      const newSeries = {
+        id: def.id,
+        conf: def.conf,
+        seeds: def.seeds,
+        round: 3,
+        parents: def.parents,
+        home: homeWinner,
+        away: awayWinner,
+        status: `${getTeam(awayWinner).abbr} vs ${getTeam(homeWinner).abbr} · series begins`,
+        games: []
+      };
+      SERIES.push(newSeries);
+      console.log(`[r3] added ${def.id}: ${awayWinner} @ ${homeWinner}`);
+    });
+  }
+
+  // ============================================================
+  // EXTEND SERIES WITH ROUND 4 (NBA Finals)
+  // Once both R3 series have winners, derive the NBA Finals matchup.
+  // FIN = winner(ECF) vs winner(WCF)
+  // ============================================================
+  function extendSeriesWithRound4() {
+    if (!results || !results.round3) return;
+    const r3 = results.round3;
+    if (!r3.ECF?.winner || !r3.WCF?.winner) return;
+
+    if (SERIES.find(s => s.id === 'FIN')) return; // already added
+
+    const newSeries = {
+      id: 'FIN',
+      conf: 'finals',
+      seeds: 'NBA FINALS',
+      round: 4,
+      parents: ['ECF', 'WCF'],
+      home: r3.WCF.winner, // West winner is home if better seed (simplification)
+      away: r3.ECF.winner,
+      status: `${getTeam(r3.ECF.winner).abbr} vs ${getTeam(r3.WCF.winner).abbr} · series begins`,
+      games: []
+    };
+    SERIES.push(newSeries);
+    console.log(`[r4] added FIN: ${r3.ECF.winner} @ ${r3.WCF.winner}`);
   }
 
 
@@ -13362,6 +13450,12 @@
     // so they render in the same series list flow.
     try { extendSeriesWithRound2(); }
     catch (e) { console.warn('[init] R2 extend failed:', e); }
+    // After R2 finishes, materialize R3 (Conf Finals) into SERIES.
+    try { extendSeriesWithRound3(); }
+    catch (e) { console.warn('[init] R3 extend failed:', e); }
+    // After R3 finishes, materialize R4 (NBA Finals) into SERIES.
+    try { extendSeriesWithRound4(); }
+    catch (e) { console.warn('[init] R4 extend failed:', e); }
     // Persist the fresh data for next return
     saveBracketsCache();
 
